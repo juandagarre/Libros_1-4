@@ -253,9 +253,10 @@
             <button class="accion" onclick="reproducirSecuencia('ES-EN')">🔊 Escuchar todas ES - EN</button>
         </div>
         <div style="display: flex; justify-content: center; gap: 10px;">
-    <button class="accion" style="background: #e74c3c;" onclick="pararAudio()">⏸️ Pausar audio</button>
+    <button class="accion" style="background: #e74c3c;" onclick="pausarAudio()">⏸️ Pausar audio</button>
     <button class="accion" style="background: #e74c3c;" onclick="reanudarAudio()">▶️ Reanudar audio</button>
 </div>
+
 
         <div>
             <button class="accion btn-visualizar" onclick="visualizarTexto('EN')">Visualizar EN</button>
@@ -6655,9 +6656,9 @@
         document.getElementById('vista-secuencial').classList.add('oculto');
         document.getElementById('vista-estudio').classList.remove('oculto');
 
-            function pararAudio() {
+                function pausarAudio() {
         if (synth) {
-            synth.pause(); // Pausa la reproducción actual para permitir reanudarla
+            synth.pause();
         }
         if (audioTimeout) {
             clearTimeout(audioTimeout);
@@ -6667,11 +6668,20 @@
 
     function reanudarAudio() {
         if (synth) {
-            synth.resume(); // Continúa el audio desde donde se pausó
+            synth.resume();
         }
     }
 
+    function pararAudio() {
+        if (synth) {
+            synth.cancel();
+        }
+        if (audioTimeout) {
+            clearTimeout(audioTimeout);
+            audioTimeout = null;
+        }
     }
+
 
     
 
