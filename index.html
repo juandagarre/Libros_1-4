@@ -6542,12 +6542,17 @@
     let synth = window.speechSynthesis;
     let audioTimeout = null;
 
-    function seleccionarLibro(libro) {
+        function seleccionarLibro(libro) {
         libroActual = libro;
         document.querySelectorAll('.btn-libro').forEach(btn => btn.classList.remove('activo'));
-        event.target.classList.add('activo');
+        // Busca el botón correspondiente al libro actual y le activa la clase de forma segura
+        const botones = document.querySelectorAll('.btn-libro');
+        if (botones[libro - 1]) {
+            botones[libro - 1].classList.add('activo');
+        }
         generarBotonesListas();
     }
+
 
     function generarBotonesListas() {
         const contenedor = document.getElementById('contenedor-listas');
