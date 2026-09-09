@@ -6535,17 +6535,25 @@
 ]
     };
 
-    let libroActual = 'A';
+         
+    // Base de datos de ejemplo (asegúrate de que contenga tus listas reales de los libros 1, 2, 3 y 4)
+    const baseDatosListas = {
+        "A01": [{en: "Hello", es: "Hola"}, {en: "Good morning", es: "Buenos días"}],
+        "A02": [{en: "Goodbye", es: "Adiós"}, {en: "See you", es: "Nos vemos"}],
+        "B01": [{en: "Thank you", es: "Gracias"}, {en: "Please", es: "Por favor"}],
+        "C01": [{en: "Yes", es: "Sí"}, {en: "No", es: "No"}]
+    };
+
+    let libroActual = '1';
     let listaActual = 'A01';
     let indiceActual = 0;
     let listaFrases = [];
     let synth = window.speechSynthesis;
     let audioTimeout = null;
 
-        function seleccionarLibro(libro) {
+    function seleccionarLibro(libro) {
         libroActual = libro;
         document.querySelectorAll('.btn-libro').forEach(btn => btn.classList.remove('activo'));
-        // Busca el botón correspondiente al libro actual y le activa la clase de forma segura
         const botones = document.querySelectorAll('.btn-libro');
         if (botones[libro - 1]) {
             botones[libro - 1].classList.add('activo');
@@ -6553,11 +6561,13 @@
         generarBotonesListas();
     }
 
-
     function generarBotonesListas() {
         const contenedor = document.getElementById('contenedor-listas');
+        if (!contenedor) return;
         contenedor.innerHTML = '';
-        const keys = Object.keys(baseDatosListas).filter(k => k.startsWith(libroActual));
+        
+        // Filtra las claves que coincidan con el libro actual (por número o letra inicial según tu estructura)
+        const keys = Object.keys(baseDatosListas).filter(k => k.startsWith('A') || k.startsWith(libroActual));
         keys.forEach(k => {
             const btn = document.createElement('button');
             btn.className = 'btn-lista';
@@ -6599,6 +6609,7 @@
 
     function leerIngles() {
         pararAudio();
+        if (!listaFrases[indiceActual]) return;
         const texto = listaFrases[indiceActual].en;
         const utter = new SpeechSynthesisUtterance(texto);
         utter.lang = 'en-US';
@@ -6607,6 +6618,7 @@
 
     function leerEspanol() {
         pararAudio();
+        if (!listaFrases[indiceActual]) return;
         const texto = listaFrases[indiceActual].es;
         const utter = new SpeechSynthesisUtterance(texto);
         utter.lang = 'es-ES';
@@ -6660,21 +6672,6 @@
         pararAudio();
         document.getElementById('vista-secuencial').classList.add('oculto');
         document.getElementById('vista-estudio').classList.remove('oculto');
-
-                function pausarAudio() {
-        if (synth) {
-            synth.pause();
-        }
-        if (audioTimeout) {
-            clearTimeout(audioTimeout);
-            audioTimeout = null;
-        }
-    }
-
-    function reanudarAudio() {
-        if (synth) {
-            synth.resume();
-        }
     }
 
     function pararAudio() {
@@ -6687,8 +6684,17 @@
         }
     }
 
+    function pausarAudio() {
+        if (synth) {
+            synth.pause();
+        }
+    }
 
-    
+    function reanudarAudio() {
+        if (synth) {
+            synth.resume();
+        }
+    }
 
     function reproducirSecuencia(modo) {
         pararAudio();
@@ -6702,9 +6708,7 @@
 
         function buscarVoz(idiomaSeleccionado) {
             const idiomaNormalizado = idiomaSeleccionado.replace('_', '-').toLowerCase();
-            return voces.find(function(v) {
-                return v.lang.replace('_', '-').toLowerCase() === idiomaNormalizado;
-            });
+            return voces.find(v => v.lang.replace('_', '-').toLowerCase() === idiomaNormalizado);
         }
 
         const vozIngles = buscarVoz(idiomaVozIngles);
@@ -6791,6 +6795,7 @@
         generarBotonesListas();
     };
 </script>
+                   
 
 </body>
 </html>
