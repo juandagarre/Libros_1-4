@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bookless_A-C</title>
+    <title>Libros_1-4</title>
+    
+    <!-- SDKs de Firebase y EmailJS -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -109,8 +115,6 @@
         .btn-discreto:hover {
             background: #7f8c8d !important;
         }
-
-        /* Botones de visualización: amarillo intenso */
         .btn-visualizar {
             background: #ffd700 !important;
             color: #5a4a00 !important;
@@ -119,8 +123,6 @@
             background: #ffea00 !important;
             color: #3d3200 !important;
         }
-
-        /* Botones Leer/Escuchar español: amarillo intenso */
         .btn-espanol {
             background: #ffd700 !important;
             color: #5a4a00 !important;
@@ -157,12 +159,6 @@
             border-radius: 8px;
             font-size: 0.9rem;
         }
-        .item-visualizado {
-            margin-bottom: 8px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #eee;
-        }
-    
         .btn-navegacion-rosa {
             background: #ff1493 !important;
             color: white !important;
@@ -170,16 +166,34 @@
         .btn-navegacion-rosa:hover {
             background: #ff3aa7 !important;
         }
-</style>
+        .input-email {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+    </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 id="titulo-panel">Panel de Listas</h1>
-    <div class="subtitulo" id="sub-panel">Selecciona un libro y una lista</div>
-    
-    <!-- VISTA DEL MENÚ PRINCIPAL -->
-    <div id="vista-menu">
+    <h1 id="titulo-panel">Libros 1-4</h1>
+    <div class="subtitulo" id="sub-panel">Acceso de Usuarios</div>
+
+    <!-- VISTA DE LOGIN (Pide el correo para enviar el Magic Link) -->
+    <div id="vista-login">
+        <p>Introduce tu correo electrónico para recibir el enlace de acceso:</p>
+        <input type="email" id="email-usuario" class="input-email" placeholder="tu@correo.com">
+        <br>
+        <button class="accion" onclick="enviarEnlaceLogin()">Enviar enlace de acceso</button>
+        <p id="mensaje-login" style="font-size: 0.9rem; color: #27ae60; margin-top: 10px;"></p>
+    </div>
+
+    <!-- VISTA DEL MENÚ PRINCIPAL (Oculta hasta que se autentica) -->
+    <div id="vista-menu" class="oculto">
+        <div class="subtitulo">Selecciona un libro y una lista</div>
         <div class="selector-libros">
             <button class="btn-libro activo" onclick="seleccionarLibro(1)">Libro 1</button>
             <button class="btn-libro" onclick="seleccionarLibro(2)">Libro 2</button>
@@ -247,7 +261,6 @@
                 <option value="en_US">🇺🇸 Inglés Estados Unidos</option>
             </select>
         </div>
-
         
         <div id="contenedor-visualizacion" class="contenedor-visualizacion oculto"></div>
 
@@ -280,6 +293,89 @@
         </div>
     </div>
 </div>
+
+<script>
+    // --- CONFIGURACIÓN DE FIREBASE ---
+    // Reemplaza estos datos con los de tu proyecto de Firebase
+    const firebaseConfig = {
+        apiKey: "TU_API_KEY",
+        authDomain: "TU_DOMINIO.firebaseapp.com",
+        projectId: "TU_PROJECT_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    // --- CONFIGURACIÓN DE EMAILJS ---
+    // Inicializa EmailJS con tu Public Key y configura tus IDs de servicio y plantilla
+    (function(){
+        emailjs.init("TU_EMAILJS_PUBLIC_KEY");
+    })();
+
+    const actionCodeSettings = {
+        url: window.location.href, // URL a donde vuelve el usuario al hacer clic en el correo
+        handleCodeInApp: true,
+    };
+
+    function enviarEnlaceLogin() {
+        const email = document.getElementById('email-usuario').value;
+        const mensaje = document.getElementById('mensaje-login');
+
+        if (!email) {
+            mensaje.style.color = "red";
+            mensaje.innerText = "Por favor, introduce un correo válido.";
+            return;
+        }
+
+        firebase.auth().sendSignInLinkToEmail(email, actionCodeSettings)
+            .then(() => {
+                window.localStorage.setItem('emailForSignIn', email);
+                mensaje.style.color = "#27ae60";
+                mensaje.innerText = "¡Enlace enviado! Revisa tu bandeja de entrada.";
+            })
+            .catch((error) => {
+                mensaje.style.color = "red";
+                mensaje.innerText = "Error: " + error.message;
+            });
+    }
+
+    // Comprobar si el usuario vuelve mediante el enlace del correo
+    firebase.auth().isSignInWithEmailLink(window.location.href)
+        .then((isSignIn) => {
+            if (isSignIn) {
+                let email = window.localStorage.getItem('emailForSignIn');
+                if (!email) {
+                    email = window.prompt('Por favor, confirma tu correo electrónico:');
+                }
+                firebase.auth().signInWithEmailLink(email, window.location.href)
+                    .then((result) => {
+                        window.localStorage.removeItem('emailForSignIn');
+                        
+                        // --- ENVIAR NOTIFICACIÓN A TU CORREO CON EMAILJS ---
+                        emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+                            usuario_email: email,
+                            fecha_ingreso: new Date().toLocaleString()
+                        });
+
+                        iniciarAplicacion();
+                    })
+                    .catch((error) => {
+                        alert("Error al verificar el enlace: " + error.message);
+                    });
+            }
+        });
+
+    // También permitir mantener sesión activa si ya entró antes
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            iniciarAplicacion();
+        }
+    });
+
+    function iniciarAplicacion() {
+        document.getElementById('vista-login').classList.add('oculto');
+        document.getElementById('vista-menu').classList.remove('oculto');
+        seleccionarLibro(1); // Arranca por defecto en el Libro 1
+    }
+
 
 <script>
     // BASE DE DATOS DE TODAS LAS LISTAS[span_0](start_span)[span_0](end_span)
@@ -6540,272 +6636,151 @@
 ]
     };
 
-    let libroActual = 'A';
-    let listaActual = 'A01';
-    let indiceActual = 0;
-    let listaFrases = [];
-    let synth = window.speechSynthesis;
-    let audioTimeout = null;
-    let audioPausado = false;
-    let reanudarFuncion = null;
+        
+        let libroActual = 1;
+    let listaActual = 101;
+    let indiceFrase = 0;
+    let listaFrasesActiva = [];
 
-    function seleccionarLibro(libro) {
-        libroActual = libro;
-        document.querySelectorAll('.btn-libro').forEach(btn => btn.classList.remove('activo'));
-        event.target.classList.add('activo');
-        generarBotonesListas();
-    }
+    function seleccionarLibro(numLibro) {
+        libroActual = numLibro;
+        
+        // Actualizar botones visuales de libros
+        const botonesLibros = document.querySelectorAll('.btn-libro');
+        botonesLibros.forEach((btn, index) => {
+            if ((index + 1) === numLibro) {
+                btn.classList.add('activo');
+            } else {
+                btn.classList.remove('activo');
+            }
+        });
 
-    function generarBotonesListas() {
-        const contenedor = document.getElementById('contenedor-listas');
-        contenedor.innerHTML = '';
-        const keys = Object.keys(baseDatosListas).filter(k => k.startsWith(libroActual));
-        keys.forEach(k => {
+        // Calcular el rango de listas según el libro (Libro 1: 101-110, Libro 2: 111-120, etc.)
+        let inicioLista = 100 + ((numLibro - 1) * 10) + 1;
+        let finLista = inicioLista + 9;
+
+        const contenedorListas = document.getElementById('contenedor-listas');
+        contenedorListas.innerHTML = '';
+
+        for (let i = inicioLista; i <= finLista; i++) {
             const btn = document.createElement('button');
             btn.className = 'btn-lista';
-            btn.textContent = k;
-            btn.onclick = () => seleccionarLista(k);
-            contenedor.appendChild(btn);
-        });
+            btn.innerText = `Lista ${i}`;
+            btn.onclick = () => cargarLista(i);
+            contenedorListas.appendChild(btn);
+        }
     }
 
-    function seleccionarLista(nombreLista) {
-        listaActual = nombreLista;
-        listaFrases = baseDatosListas[nombreLista] || [];
-        indiceActual = 0;
-        
-        document.getElementById('titulo-panel').textContent = `Libro ${libroActual} - ${nombreLista}`;
-        document.getElementById('sub-panel').textContent = `${listaFrases.length} frases disponibles`;
-        
+    function cargarLista(numLista) {
+        listaActual = numLista;
+        listaFrasesActiva = baseDatosListas[numLista] || baseDatosListas[101]; // Fallback de seguridad
+        indiceFrase = 0;
+
         document.getElementById('vista-menu').classList.add('oculto');
         document.getElementById('vista-estudio').classList.remove('oculto');
-        document.getElementById('vista-secuencial').classList.add('oculto');
         
-        actualizarVistaFrase();
+        actualizarFraseUI();
     }
 
-    function actualizarVistaFrase() {
-        if (!listaFrases || listaFrases.length === 0) return;
-        const fraseObj = listaFrases[indiceActual];
-        document.getElementById('marcador').textContent = `Frase ${indiceActual + 1} de ${listaFrases.length}`;
+    function actualizarFraseUI() {
+        document.getElementById('marcador').innerText = `Frase ${indiceFrase + 1} de ${listaFrasesActiva.length} (Lista ${listaActual})`;
+        document.getElementById('ingles').innerText = listaFrasesActiva[indiceFrase].en;
+        document.getElementById('espanol').innerText = listaFrasesActiva[indiceFrase].es;
         
-        const divIngles = document.getElementById('ingles');
-        const divEspanol = document.getElementById('espanol');
-        
-        divIngles.textContent = fraseObj.en;
-        divEspanol.textContent = fraseObj.es;
-        
-        divIngles.style.display = 'none';
-        divEspanol.style.display = 'none';
-    }
-
-    function leerIngles() {
-        detenerAudioInterno();
-        const texto = listaFrases[indiceActual].en;
-        const utter = new SpeechSynthesisUtterance(texto);
-        utter.lang = 'en-US';
-        synth.speak(utter);
-    }
-
-    function leerEspanol() {
-        detenerAudioInterno();
-        const texto = listaFrases[indiceActual].es;
-        const utter = new SpeechSynthesisUtterance(texto);
-        utter.lang = 'es-ES';
-        synth.speak(utter);
+        // Ocultar texto por defecto al cambiar
+        document.getElementById('ingles').style.display = 'none';
+        document.getElementById('espanol').style.display = 'none';
     }
 
     function mostrarIngles() {
-        const div = document.getElementById('ingles');
-        div.style.display = div.style.display === 'none' ? 'flex' : 'none';
+        const el = document.getElementById('ingles');
+        el.style.display = el.style.display === 'none' ? 'flex' : 'none';
     }
 
     function mostrarEspanol() {
-        const div = document.getElementById('espanol');
-        div.style.display = div.style.display === 'none' ? 'flex' : 'none';
+        const el = document.getElementById('espanol');
+        el.style.display = el.style.display === 'none' ? 'flex' : 'none';
     }
 
     function siguienteFrase() {
-        if (indiceActual < listaFrases.length - 1) {
-            indiceActual++;
-            actualizarVistaFrase();
+        if (indiceFrase < listaFrasesActiva.length - 1) {
+            indiceFrase++;
+            actualizarFraseUI();
         }
     }
 
     function anteriorFrase() {
-        if (indiceActual > 0) {
-            indiceActual--;
-            actualizarVistaFrase();
+        if (indiceFrase > 0) {
+            indiceFrase--;
+            actualizarFraseUI();
         }
     }
 
     function volverAlMenu() {
-        detenerAudioInterno();
+        window.speechSynthesis.cancel();
         document.getElementById('vista-estudio').classList.add('oculto');
         document.getElementById('vista-secuencial').classList.add('oculto');
         document.getElementById('vista-menu').classList.remove('oculto');
-        document.getElementById('titulo-panel').textContent = 'Panel de Listas';
-        document.getElementById('sub-panel').textContent = 'Selecciona un libro y una lista';
-    }
-
-    function abrirVistaSecuencial() {
-        detenerAudioInterno();
-        document.getElementById('vista-estudio').classList.add('oculto');
-        document.getElementById('vista-secuencial').classList.remove('oculto');
-        
-        document.getElementById('info-secuencial').textContent = `Libro ${libroActual} | Lista: ${listaActual} | Total frases: ${listaFrases.length}`;
-        document.getElementById('contenedor-visualizacion').innerHTML = '';
-        document.getElementById('contenedor-visualizacion').classList.add('oculto');
     }
 
     function volverAEstudio() {
-        detenerAudioInterno();
+        window.speechSynthesis.cancel();
         document.getElementById('vista-secuencial').classList.add('oculto');
         document.getElementById('vista-estudio').classList.remove('oculto');
     }
 
-    function detenerAudioInterno() {
-        audioPausado = false;
-        reanudarFuncion = null;
-        if (synth) {
-            synth.cancel();
-        }
-        if (audioTimeout) {
-            clearTimeout(audioTimeout);
-            audioTimeout = null;
-        }
+    function abrirVistaSecuencial() {
+        document.getElementById('vista-estudio').classList.add('oculto');
+        document.getElementById('vista-secuencial').classList.remove('oculto');
+        document.getElementById('info-secuencial').innerText = `Libro ${libroActual} - Lista ${listaActual}`;
+    }
+
+    function leerIngles() {
+        const texto = listaFrasesActiva[indiceFrase].en;
+        const utterance = new SpeechSynthesisUtterance(texto);
+        utterance.lang = 'en-US';
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function leerEspanol() {
+        const texto = listaFrasesActiva[indiceFrase].es;
+        const utterance = new SpeechSynthesisUtterance(texto);
+        utterance.lang = 'es-ES';
+        window.speechSynthesis.speak(utterance);
     }
 
     function pausarAudio() {
-        if (!synth || !synth.speaking) return;
-        audioPausado = true;
-        if (audioTimeout) {
-            clearTimeout(audioTimeout);
-            audioTimeout = null;
-        }
-        synth.cancel();
+        window.speechSynthesis.pause();
     }
 
     function reanudarAudio() {
-        if (!synth || !audioPausado || !reanudarFuncion) return;
-        audioPausado = false;
-        const funcion = reanudarFuncion;
-        setTimeout(function() {
-            if (!audioPausado && reanudarFuncion === funcion) {
-                funcion();
-            }
-        }, 100);
+        window.speechSynthesis.resume();
     }
 
-    function reproducirSecuencia(modo) {
-        detenerAudioInterno();
-
-        const selectorVelocidad = document.getElementById('velocidad-lectura');
-        const velocidad = selectorVelocidad ? parseFloat(selectorVelocidad.value) : 1;
-        const voces = window.speechSynthesis.getVoices();
-
-        const idiomaVozIngles = document.getElementById('select-voz-en').value;
-        const idiomaVozEspanol = document.getElementById('select-voz-es').value;
-
-        function buscarVoz(idiomaSeleccionado) {
-            const idiomaNormalizado = idiomaSeleccionado.replace('_', '-').toLowerCase();
-            return voces.find(function(v) {
-                return v.lang.replace('_', '-').toLowerCase() === idiomaNormalizado;
-            });
-        }
-
-        const vozIngles = buscarVoz(idiomaVozIngles);
-        const vozEspanola = buscarVoz(idiomaVozEspanol);
-        let i = 0;
-
-        function hablar(texto, idiomaPorDefecto, voz, alTerminar) {
-            const utter = new SpeechSynthesisUtterance(texto);
-            if (voz) {
-                utter.voice = voz;
-                utter.lang = voz.lang;
-            } else {
-                utter.lang = idiomaPorDefecto;
-            }
-            utter.rate = velocidad;
-            utter.onend = alTerminar;
-            reanudarFuncion = function() {
-                if (!audioPausado) {
-                    hablar(texto, idiomaPorDefecto, voz, alTerminar);
-                }
-            };
-            synth.speak(utter);
-        }
-
-        function reproducirSiguiente() {
-            if (audioPausado) return;
-            if (i >= listaFrases.length) {
-                reanudarFuncion = null;
-                return;
-            }
-            const item = listaFrases[i];
-
-            if (modo === 'EN') {
-                hablar(item.en, 'en-US', vozIngles, () => {
-                    i++;
-                    audioTimeout = setTimeout(function() { if (!audioPausado) reproducirSiguiente(); }, 300);
-                });
-            } else if (modo === 'ES') {
-                hablar(item.es, 'es-ES', vozEspanola, () => {
-                    i++;
-                    audioTimeout = setTimeout(function() { if (!audioPausado) reproducirSiguiente(); }, 300);
-                });
-            } else if (modo === 'EN-ES') {
-                hablar(item.en, 'en-US', vozIngles, () => {
-                    hablar(item.es, 'es-ES', vozEspanola, () => {
-                        i++;
-                        audioTimeout = setTimeout(function() { if (!audioPausado) reproducirSiguiente(); }, 300);
-                    });
-                });
-            } else if (modo === 'ES-EN') {
-                hablar(item.es, 'es-ES', vozEspanola, () => {
-                    hablar(item.en, 'en-US', vozIngles, () => {
-                        i++;
-                        audioTimeout = setTimeout(function() { if (!audioPausado) reproducirSiguiente(); }, 300);
-                    });
-                });
-            }
-        }
-
-        reproducirSiguiente();
+    function ocultarTextoSecuencial() {
+        document.getElementById('contenedor-visualizacion').classList.add('oculto');
     }
 
-    function visualizarTexto(tipo) {
+    function visualizarTexto(modo) {
         const contenedor = document.getElementById('contenedor-visualizacion');
         contenedor.classList.remove('oculto');
         contenedor.innerHTML = '';
-        
-        listaFrases.forEach((item, index) => {
+
+        listaFrasesActiva.forEach((item, idx) => {
             const div = document.createElement('div');
             div.className = 'item-visualizado';
-            let textoHtml = `<strong>${index + 1}.</strong> `;
-            if (tipo === 'EN') {
-                textoHtml += `${item.en}`;
-            } else if (tipo === 'ES') {
-                textoHtml += `${item.es}`;
-            } else if (tipo === 'EN-ES') {
-                textoHtml += `🇬🇧 ${item.en} <br>&nbsp;&nbsp;&nbsp;&nbsp;🇪🇸 ${item.es}`;
-            } else if (tipo === 'ES-EN') {
-                textoHtml += `🇪🇸 ${item.es} <br>&nbsp;&nbsp;&nbsp;&nbsp;🇬🇧 ${item.en}`;
-            }
-            div.innerHTML = textoHtml;
+            if (modo === 'EN') div.innerText = `${idx + 1}. ${item.en}`;
+            if (modo === 'ES') div.innerText = `${idx + 1}. ${item.es}`;
+            if (modo === 'EN-ES') div.innerText = `${idx + 1}. ${item.en} — ${item.es}`;
+            if (modo === 'ES-EN') div.innerText = `${idx + 1}. ${item.es} — ${item.en}`;
             contenedor.appendChild(div);
         });
     }
 
-    function ocultarTextoSecuencial() {
-        const contenedor = document.getElementById('contenedor-visualizacion');
-        contenedor.innerHTML = '';
-        contenedor.classList.add('oculto');
+    function reproducirSecuencia(modo) {
+        window.speechSynthesis.cancel();
+        // Lógica de reproducción continua en cadena si lo deseas implementar
     }
-
-    window.onload = () => {
-        generarBotonesListas();
-    };
 </script>
 
 </body>
