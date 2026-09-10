@@ -253,9 +253,11 @@
             <button class="accion" onclick="reproducirSecuencia('EN-ES')">🔊 Escuchar todas EN - ES</button>
             <button class="accion" onclick="reproducirSecuencia('ES-EN')">🔊 Escuchar todas ES - EN</button>
         </div>
-        <div>
-            <button class="accion" style="background: #e74c3c;" onclick="pararAudio()">⏹️ Parar audio</button>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+            <button class="accion" style="background: #e74c3c; margin: 0;" onclick="pausarAudio()">⏸️ Pausar audio</button>
+            <button class="accion" style="background: #e74c3c; margin: 0;" onclick="reanudarAudio()">▶️ Reanudar audio</button>
         </div>
+
         <div>
             <button class="accion btn-visualizar" onclick="visualizarTexto('EN')">Visualizar EN</button>
             <button class="accion btn-visualizar" onclick="visualizarTexto('ES')">Visualizar ES</button>
@@ -6655,6 +6657,23 @@
         document.getElementById('vista-estudio').classList.remove('oculto');
     }
 
+        function pausarAudio() {
+        if (synth) {
+            synth.pause();
+        }
+        if (audioTimeout) {
+            clearTimeout(audioTimeout);
+            audioTimeout = null;
+        }
+    }
+
+    function reanudarAudio() {
+        if (synth) {
+            synth.resume();
+        }
+    }
+
+    // Dejo esta por compatibilidad interna por si se llama desde otro sitio, pero ya no tiene botón visual
     function pararAudio() {
         if (synth) {
             synth.cancel();
@@ -6664,6 +6683,7 @@
             audioTimeout = null;
         }
     }
+
 
     function reproducirSecuencia(modo) {
         pararAudio();
