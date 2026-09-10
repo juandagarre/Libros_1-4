@@ -296,23 +296,20 @@
 
 <script>
     // --- CONFIGURACIÓN DE FIREBASE ---
-    // Reemplaza estos datos con los de tu proyecto de Firebase
-        const firebaseConfig = {
+    const firebaseConfig = {
         apiKey: "AIzaSyC_s5suiACPV_itJAq4XcR3tEXOPoGfT6M",
         authDomain: "libros-1-4.firebaseapp.com",
         projectId: "libros-1-4"
     };
-
     firebase.initializeApp(firebaseConfig);
 
     // --- CONFIGURACIÓN DE EMAILJS ---
-    // Inicializa EmailJS con tu Public Key y configura tus IDs de servicio y plantilla
     (function(){
         emailjs.init("UgKsBw8SRMgYBoPy3KWgx");
     })();
 
     const actionCodeSettings = {
-        url: window.location.href, // URL a donde vuelve el usuario al hacer clic en el correo
+        url: window.location.href,
         handleCodeInApp: true,
     };
 
@@ -338,7 +335,6 @@
             });
     }
 
-    // Comprobar si el usuario vuelve mediante el enlace del correo
     firebase.auth().isSignInWithEmailLink(window.location.href)
         .then((isSignIn) => {
             if (isSignIn) {
@@ -350,7 +346,6 @@
                     .then((result) => {
                         window.localStorage.removeItem('emailForSignIn');
                         
-                        // --- ENVIAR NOTIFICACIÓN A TU CORREO CON EMAILJS ---
                         emailjs.send("service_ft1wkhu", "template_4acbswy", {
                             usuario_email: email,
                             fecha_ingreso: new Date().toLocaleString()
@@ -364,7 +359,6 @@
             }
         });
 
-    // También permitir mantener sesión activa si ya entró antes
     firebase.auth().onAuthStateChanged((user) => {
         if (user) {
             iniciarAplicacion();
@@ -374,8 +368,10 @@
     function iniciarAplicacion() {
         document.getElementById('vista-login').classList.add('oculto');
         document.getElementById('vista-menu').classList.remove('oculto');
-        seleccionarLibro(1); // Arranca por defecto en el Libro 1
+        seleccionarLibro(1);
     }
+</script>
+
 
 
 <script>
