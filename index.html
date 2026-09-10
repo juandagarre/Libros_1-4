@@ -340,34 +340,35 @@
             });
     }
 
-    firebase.auth().isSignInWithEmailLink(window.location.href)
-        .then((isSignIn) => {
-            if (isSignIn) {
-                let email = window.localStorage.getItem('emailForSignIn');
-                if (!email) {
-                    email = window.prompt('Por favor, confirma tu correo electrónico:');
-                }
-                firebase.auth().signInWithEmailLink(email, window.location.href)
-                    .then((result) => {
-                        window.localStorage.removeItem('emailForSignIn');
-                        
-                        emailjs.send("service_ft1wkhu", "template_4acbswy", {
-                            usuario_email: email,
-                            fecha_ingreso: new Date().toLocaleString()
-                        });
-
-                        iniciarAplicacion();
-                    })
-                    .catch((error) => {
-                        alert("Error al verificar el enlace: " + error.message);
-                    });
-            }
-        });
-
-    firebase.auth().onAuthStateChanged((user) => {
-        if (user) {
-            iniciarAplicacion();
+        // Comprobar si el usuario vuelve mediante el enlace del correo
+    if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+        if (!email) {
+            email = window.prompt('Por favor, confirma tu correo electrónico para finalizar el acceso:');
         }
+        
+        if (email) {
+            firebase.auth().signInWithEmailLink(email, window.location.href)
+                .then((result) => {
+                    window.localStorage.removeItem('emailForSignIn');
+                    
+                    // Limpiar la URL para quitar los códigos largos de Firebase
+                    window.history.replaceState({}, document.title, window.location.pathname);
+
+                    // Enviar notificación por EmailJS
+                    emailjs.send("service_ft1wkhu", "template_4acbswy", {
+                        usuario_email: email,
+                        fecha_ingreso: new Date().toLocaleString()
+                    }).catch(err => console.log("Error EmailJS:", err));
+
+                    iniciarAplicacion();
+                })
+                .catch((error) => {
+                    alert("Error al verificar el enlace: " + error.message);
+                });
+        }
+    }
+
     });
 
     function iniciarAplicacion() {
