@@ -298,16 +298,16 @@
     // --- CONFIGURACIÓN DE FIREBASE ---
     // Reemplaza estos datos con los de tu proyecto de Firebase
     const firebaseConfig = {
-        apiKey: "TU_API_KEY",
-        authDomain: "TU_DOMINIO.firebaseapp.com",
-        projectId: "TU_PROJECT_ID"
+        apiKey: "UgKsBw8SRMgYBoPy3KWgx",
+        authDomain: "libros-1-4.firebaseapp.com",
+        projectId: "libros-1-4"
     };
     firebase.initializeApp(firebaseConfig);
 
     // --- CONFIGURACIÓN DE EMAILJS ---
     // Inicializa EmailJS con tu Public Key y configura tus IDs de servicio y plantilla
     (function(){
-        emailjs.init("TU_EMAILJS_PUBLIC_KEY");
+        emailjs.init("UgKsBw8SRMgYBoPy3KWgx");
     })();
 
     const actionCodeSettings = {
@@ -350,7 +350,7 @@
                         window.localStorage.removeItem('emailForSignIn');
                         
                         // --- ENVIAR NOTIFICACIÓN A TU CORREO CON EMAILJS ---
-                        emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+                        emailjs.send("service_ft1wkhu", "template_4acbswy", {
                             usuario_email: email,
                             fecha_ingreso: new Date().toLocaleString()
                         });
