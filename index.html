@@ -6784,4 +6784,85 @@
 </script>
 
 </body>
+
+<script>
+    // --- CONFIGURACIÓN DE FIREBASE ---
+    const firebaseConfig = {
+        apiKey: "UgKsBw8SRMgYBoPy3KWgx",
+        authDomain: "libros-1-4.firebaseapp.com",
+        projectId: "libros-1-4"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    // --- CONFIGURACIÓN DE EMAILJS ---
+    (function(){
+        emailjs.init("UgKsBw8SRMgYBoPy3KWgx");
+    })();
+
+    const actionCodeSettings = {
+        url: window.location.href,
+        handleCodeInApp: true,
+    };
+
+    // --- FUNCIÓN DE ENVÍO DE ENLACE MÁGICO ---
+    function enviarEnlaceLogin() {
+        const email = document.getElementById('email-usuario').value;
+        const mensaje = document.getElementById('mensaje-login');
+
+        if (!email) {
+            mensaje.style.color = "red";
+            mensaje.innerText = "Por favor, introduce un correo válido.";
+            return;
+        }
+
+        firebase.auth().sendSignInLinkToEmail(email, actionCodeSettings)
+            .then(() => {
+                window.localStorage.setItem('emailForSignIn', email);
+                mensaje.style.color = "#27ae60";
+                mensaje.innerText = "¡Enlace enviado! Revisa tu bandeja de entrada.";
+                
+                // Notificación opcional por EmailJS
+                emailjs.send("service_ft1wkhu", "template_4acbswy", {
+                    usuario_email: email,
+                    fecha_ingreso: new Date().toLocaleString()
+                }).catch(err => console.error("Error EmailJS:", err));
+            })
+            .catch((error) => {
+                mensaje.style.color = "red";
+                mensaje.innerText = "Error: " + error.message;
+            });
+    }
+
+    // --- COMPROBAR SI EL USUARIO VUELVE DESDE EL CORREO ---
+    firebase.auth().isSignInWithEmailLink(window.location.href)
+        .then((isSignIn) => {
+            if (isSignIn) {
+                let email = window.localStorage.getItem('emailForSignIn');
+                if (!email) {
+                    email = window.prompt('Por favor, confirma tu correo electrónico:');
+                }
+                firebase.auth().signInWithEmailLink(email, window.location.href)
+                    .then((result) => {
+                        window.localStorage.removeItem('emailForSignIn');
+                        iniciarAplicacion();
+                    })
+                    .catch((error) => {
+                        alert("Error al verificar el enlace: " + error.message);
+                    });
+            }
+        });
+
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            iniciarAplicacion();
+        }
+    });
+
+    function iniciarAplicacion() {
+        document.getElementById('vista-login').classList.add('oculto');
+        document.getElementById('vista-menu').classList.remove('oculto');
+    }
+</script>
+
+    
 </html>
