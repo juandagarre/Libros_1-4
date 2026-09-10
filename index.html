@@ -6645,7 +6645,7 @@
     let indiceFrase = 0;
     let listaFrasesActiva = [];
 
-    function seleccionarLibro(numLibro) {
+        function seleccionarLibro(numLibro) {
         libroActual = numLibro;
         
         // Actualizar botones visuales de libros
@@ -6658,9 +6658,9 @@
             }
         });
 
-        // Calcular el rango de listas según el libro (Libro 1: 101-110, Libro 2: 111-120, etc.)
-        let inicioLista = 100 + ((numLibro - 1) * 10) + 1;
-        let finLista = inicioLista + 9;
+        // Calcular el inicio de cada centena (Libro 1: 101, Libro 2: 201, Libro 3: 301, Libro 4: 401)
+        let inicioLista = numLibro * 100 + 1;
+        let finLista = inicioLista + 29; // 30 listas por libro
 
         const contenedorListas = document.getElementById('contenedor-listas');
         contenedorListas.innerHTML = '';
@@ -6673,6 +6673,7 @@
             contenedorListas.appendChild(btn);
         }
     }
+
 
     function cargarLista(numLista) {
         listaActual = numLista;
