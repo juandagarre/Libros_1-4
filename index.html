@@ -6781,10 +6781,87 @@
         });
     }
 
+    let indiceSecuencia = 0;
+    let reproduciendoActivo = false;
+
     function reproducirSecuencia(modo) {
-        window.speechSynthesis.cancel();
-        // Lógica de reproducción continua en cadena si lo deseas implementar
+        synth.cancel();
+        const listaFrases = baseDatosListas[listaActual] || [];
+        if (listaFrases.length === 0) return;
+
+        indiceSecuencia = 0;
+        reproduciendoActivo = true;
+
+        const velocidad = parseFloat(document.getElementById('velocidad-lectura').value) || 1;
+        const vozEnLang = document.getElementById('select-voz-en').value || 'en-US';
+        const vozEsLang = document.getElementById('select-voz-es').value || 'es-ES';
+
+        function reproducirSiguiente() {
+            if (!reproduciendoActivo || indiceSecuencia >= listaFrases.length) {
+                reproduciendoActivo = false;
+                return;
+            }
+
+            const fraseObj = listaFrases[indiceSecuencia];
+            
+            if (modo === 'EN') {
+                hablarTexto(fraseObj.en, vozEnLang, velocidad, () => {
+                    indiceSecuencia++;
+                    reproducirSiguiente();
+                });
+            } else if (modo === 'ES') {
+                hablarTexto(fraseObj.es, vozEsLang, velocidad, () => {
+                    indiceSecuencia++;
+                    reproducirSiguiente();
+                });
+            } else if (modo === 'EN-ES') {
+                hablarTexto(fraseObj.en, vozEnLang, velocidad, () => {
+                    if (!reproduciendoActivo) return;
+                    hablarTexto(fraseObj.es, vozEsLang, velocidad, () => {
+                        indiceSecuencia++;
+                        reproducirSiguiente();
+                    });
+                });
+            } else if (modo === 'ES-EN') {
+                hablarTexto(fraseObj.es, vozEsLang, velocidad, () => {
+                    if (!reproduciendoActivo) return;
+                    hablarTexto(fraseObj.en, vozEnLang, velocidad, () => {
+                        indiceSecuencia++;
+                        reproducirSiguiente();
+                    });
+                });
+            }
+        }
+
+        reproducirSiguiente();
     }
+
+    function hablarTexto(texto, lang, velocidad, onEndCallback) {
+        if (!reproduciendoActivo) return;
+        let utter = new SpeechSynthesisUtterance(texto);
+        utter.lang = lang;
+        utter.rate = velocidad;
+        utter.onend = () => {
+            if (onEndCallback) onEndCallback();
+        };
+        utter.onerror = () => {
+            if (onEndCallback) onEndCallback();
+        };
+        synth.speak(utter);
+    }
+
+    function pausarAudio() {
+        reproduciendoActivo = false;
+        synth.pause();
+    }
+
+    function reanudarAudio() {
+        reproduciendoActivo = true;
+        synth.resume();
+    }
+
+
+    
 </script>
 
 </body>
