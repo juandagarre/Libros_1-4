@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Libros 1-4</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f3f3f3;
+    margin: 0;
+    padding: 15px;
+    color: #222;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px #bbb;
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+input, select, button {
+    font-size: 18px;
+    padding: 12px;
+    margin: 6px;
+    border-radius: 8px;
+}
+
+input, select {
+    border: 1px solid #aaa;
+    width: calc(100% - 12px);
+}
+
+button {
+    border: none;
+    cursor: pointer;
+    background: #4caf50;
+    color: white;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.center {
+    text-align: center;
+}
+
+.book-grid,
+.list-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.book-grid button {
+    background: #1976d2;
+}
+
+.list-grid button {
+    background: #607d8b;
+}
+
+.phrase {
+    font-size: 26px;
+    text-align: center;
+    min-height: 80px;
+    padding: 20px;
+}
+
+.buttons {
+    text-align: center;
+}
+
+/* Amarillo */
+.btn-espanol,
+.btn-visualizar {
+    background: #ffd900;
+    color: #111;
+    font-weight: bold;
+}
+
+/* Rosa fuerte */
+.btn-navegacion-rosa {
+    background: #ff1493;
+    color: white;
+    font-weight: bold;
+}
+
+.sequence-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.sequence-buttons button {
+    background: #1976d2;
+}
+
+.voice-row {
+    margin: 10px 0;
+}
+
+.status {
+    text-align: center;
+    font-weight: bold;
+    min-height: 25px;
+}
+
+hr {
+    margin: 25px 0;
+}
+
+#visualizacion {
+    text-align: left;
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+@media (max-width: 600px) {
+
+    .book-grid,
+    .list-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .phrase {
+        font-size: 22px;
+    }
+
+    button,
+    select,
+    input {
+        font-size: 16px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- =====================================================
+     LOGIN
+===================================================== -->
+
+<section id="loginView">
+
+    <h1>Libros 1-4</h1>
+
+    <p class="center">
+        Introduce tu correo para recibir el enlace de acceso.
+    </p>
+
+    <input
+        id="emailInput"
+        type="email"
+        placeholder="Tu correo electrónico"
+    >
+
+    <div class="center">
+        <button onclick="enviarEnlaceAcceso()">
+            Enviar enlace de acceso
+        </button>
+    </div>
+
+    <p id="loginMessage" class="status"></p>
+
+</section>
+
+
+<!-- =====================================================
+     MENU
+===================================================== -->
+
+<section id="menuView" class="hidden">
+
+    <h1>Libros 1-4</h1>
+
+    <div id="bookButtons" class="book-grid"></div>
+
+    <hr>
+
+    <div id="listButtons" class="list-grid"></div>
+
+</section>
+
+
+<!-- =====================================================
+     PANTALLA DE ESTUDIO
+===================================================== -->
+
+<section id="studyView" class="hidden">
+
+    <h2 id="studyTitle"></h2>
+
+    <div
+        id="phraseEN"
+        class="phrase"
+    ></div>
+
+    <div
+        id="phraseES"
+        class="phrase"
+    ></div>
+
+
+    <div class="buttons">
+
+        <!-- INGLÉS -->
+        <div>
+            <button onclick="escucharIngles()">
+                Escuchar EN
+            </button>
+
+            <button onclick="mostrarIngles()">
+                Leer EN
+            </button>
+        </div>
+
+
+        <!-- ESPAÑOL -->
+        <div>
+            <button
+                class="btn-espanol"
+                onclick="escucharEspanol()"
+            >
+                Escuchar ES
+            </button>
+
+            <button
+                class="btn-espanol"
+                onclick="mostrarEspanol()"
+            >
+                Leer ES
+            </button>
+        </div>
+
+
+        <!-- NAVEGACIÓN -->
+        <div>
+
+            <button
+                class="btn-navegacion-rosa"
+                onclick="anteriorFrase()"
+            >
+                Anterior
+            </button>
+
+            <button
+                class="btn-navegacion-rosa"
+                onclick="siguienteFrase()"
+            >
+                Siguiente
+            </button>
+
+        </div>
+
+
+        <div>
+            <button onclick="abrirVistaSecuencial()">
+                Vista secuencial
+            </button>
+        </div>
+
+
+        <div>
+            <button onclick="volverAlMenu()">
+                Volver a las listas
+            </button>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     VISTA SECUENCIAL
+===================================================== -->
+
+<section id="sequenceView" class="hidden">
+
+    <h2>Vista secuencial</h2>
+
+
+    <!-- VELOCIDAD -->
+
+    <div class="voice-row">
+
+        <label>
+            <b>Selecciona velocidad de lectura</b>
+        </label>
+
+        <select id="speedSelect">
+
+            <option value="1">
+                1.0x
+            </option>
+
+            <option value="0.6">
+                0.6x
+            </option>
+
+            <option value="0.2">
+                0.2x
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <!-- VOZ INGLÉS -->
+
+    <div class="voice-row">
+
+        <label>
+            <b>Voz para inglés</b>
+        </label>
+
+        <select id="englishVoice"></select>
+
+    </div>
+
+
+    <!-- VOZ ESPAÑOL -->
+
+    <div class="voice-row">
+
+        <label>
+            <b>Voz para español</b>
+        </label>
+
+        <select id="spanishVoice"></select>
+
+    </div>
+
+
+    <div
+        id="visualizacion"
+        class="phrase"
+    ></div>
+
+
+    <!-- SECUENCIAS -->
+
+    <div class="sequence-buttons">
+
+        <button onclick="reproducirSecuencia('en')">
+            Escuchar todas EN
+        </button>
+
+        <button onclick="reproducirSecuencia('es')">
+            Escuchar todas ES
+        </button>
+
+        <button onclick="reproducirSecuencia('en-es')">
+            Escuchar EN-ES
+        </button>
+
+        <button onclick="reproducirSecuencia('es-en')">
+            Escuchar ES-EN
+        </button>
+
+    </div>
+
+
+    <!-- CONTROL AUDIO -->
+
+    <div class="buttons">
+
+        <button onclick="pausarAudio()">
+            Pausar
+        </button>
+
+        <button onclick="reanudarAudio()">
+            Reanudar
+        </button>
+
+        <button onclick="detenerAudio()">
+            Parar audio
+        </button>
+
+    </div>
+
+
+    <!-- VISUALIZACIÓN -->
+
+    <div class="buttons">
+
+        <button
+            class="btn-visualizar"
+            onclick="mostrarSecuenciaEN()"
+        >
+            Visualizar EN
+        </button>
+
+        <button
+            class="btn-visualizar"
+            onclick="mostrarSecuenciaES()"
+        >
+            Visualizar ES
+        </button>
+
+        <button
+            class="btn-visualizar"
+            onclick="mostrarSecuenciaENES()"
+        >
+            Visualizar EN-ES
+        </button>
+
+        <button
+            class="btn-visualizar"
+            onclick="mostrarSecuenciaESEN()"
+        >
+            Visualizar ES-EN
+        </button>
+
+    </div>
+
+
+    <div class="buttons">
+
+        <button onclick="volverAlEstudio()">
+            Volver
+        </button>
+
+        <button onclick="volverAlMenu()">
+            Cambiar de lista
+        </button>
+
+    </div>
+
+</section>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   FIREBASE
+===================================================== */
+
+const firebaseConfig = {
+    apiKey: "AIzaSyC_s5suiACPV_itJAq4XcR3tEXOPoGf6T6M",
+    authDomain: "libros-1-4.firebaseapp.com",
+    projectId: "libros-1-4"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+
+
+/* =====================================================
+   EMAILJS
+===================================================== */
+
+emailjs.init("UgKsBw8SRMgYBoPy3KWgx");
+
+
+const EMAILJS_SERVICE = "service_ft1wkhu";
+const EMAILJS_TEMPLATE = "template_4acbswy";
+
+
+/*
+   Esta función envía el aviso por EmailJS.
+
+   IMPORTANTE:
+   Si EmailJS falla, NO bloqueamos la aplicación.
+*/
+
+function enviarAvisoEmailJS(emailUsuario) {
+
+    const ahora = new Date();
+
+    const fechaIngreso =
+        ahora.toLocaleString("es-ES");
+
+    const parametros = {
+        usuario_email: emailUsuario,
+        fecha_ingreso: fechaIngreso
+    };
+
+
+    emailjs.send(
+        EMAILJS_SERVICE,
+        EMAILJS_TEMPLATE,
+        parametros
+    )
+    .then(function(response) {
+
+        console.log(
+            "EmailJS enviado correctamente:",
+            response.status,
+            response.text
+        );
+
+    })
+    .catch(function(error) {
+
+        console.error(
+            "Error de EmailJS:",
+            error
+        );
+
+        /*
+           No hacemos nada más.
+           El usuario ya puede utilizar
+           la aplicación.
+        */
+
+    });
+
+}
+
+
+/* =====================================================
+   BASE DE DATOS
+===================================================== */
+
+/*
+   AQUÍ ES DONDE DESPUÉS AÑADIRÁS TUS LISTAS.
+
+   LIBRO 1:
+   101 - 130
+
+   LIBRO 2:
+   131 - 160
+
+   LIBRO 3:
+   161 - 190
+
+   LIBRO 4:
+   191 - 220
+
+   Cada lista debe tener esta estructura:
+
+   101: [
+       {es:"Hola.", en:"Hello."},
+       {es:"¿Cómo estás?", en:"How are you?"}
+   ],
+
+   MUY IMPORTANTE:
+   No poner una llave { adicional antes de {es: ...}
+*/
+
+
+const baseDatosListas = {
+
+
+    /* =========================
+       LIBRO 1
+    ========================= */
+
+    101: [
+
+        {
+            es: "Hola.",
+            en: "Hello."
+        },
+
+        {
+            es: "¿Cómo estás?",
+            en: "How are you?"
+        },
+
+        {
+            es: "Estoy bien.",
+            en: "I am fine."
+        }
+
+    ],
+
+
+    102: [
+
+        {
+            es: "No sé.",
+            en: "I don't know."
+        },
+
+        {
+            es: "Gracias por el cumplido.",
+            en: "Thanks for the compliment."
+        },
+
+        {
+            es: "Hasta luego.",
+            en: "See you later."
+        }
+
+    ],
+
+
+    /* =========================
+       LIBRO 2
+    ========================= */
+
+    131: [
+
+        {
+            es: "Buenos días.",
+            en: "Good morning."
+        },
+
+        {
+            es: "¿Qué tal?",
+            en: "How are you doing?"
+        },
+
+        {
+            es: "Muy bien, gracias.",
+            en: "Very well, thank you."
+        }
+
+    ],
+
+
+    132: [
+
+        {
+            es: "¿Dónde vives?",
+            en: "Where do you live?"
+        },
+
+        {
+            es: "Vivo en España.",
+            en: "I live in Spain."
+        },
+
+        {
+            es: "¿Y tú?",
+            en: "And you?"
+        }
+
+    ],
+
+
+    /* =========================
+       LIBRO 3
+    ========================= */
+
+    161: [
+
+        {
+            es: "¿Qué haces?",
+            en: "What are you doing?"
+        },
+
+        {
+            es: "Estoy estudiando.",
+            en: "I am studying."
+        },
+
+        {
+            es: "Nos vemos mañana.",
+            en: "See you tomorrow."
+        }
+
+    ],
+
+
+    162: [
+
+        {
+            es: "¿Puedes ayudarme?",
+            en: "Can you help me?"
+        },
+
+        {
+            es: "Por supuesto.",
+            en: "Of course."
+        },
+
+        {
+            es: "Muchas gracias.",
+            en: "Thank you very much."
+        }
+
+    ],
+
+
+    /* =========================
+       LIBRO 4
+    ========================= */
+
+    191: [
+
+        {
+            es: "¿A qué hora empieza?",
+            en: "What time does it start?"
+        },
+
+        {
+            es: "Empieza a las ocho.",
+            en: "It starts at eight."
+        },
+
+        {
+            es: "Perfecto.",
+            en: "Perfect."
+        }
+
+    ],
+
+
+    192: [
+
+        {
+            es: "¿Cuánto cuesta?",
+            en: "How much does it cost?"
+        },
+
+        {
+            es: "Cuesta veinte euros.",
+            en: "It costs twenty euros."
+        },
+
+        {
+            es: "Me parece bien.",
+            en: "That sounds good to me."
+        }
+
+    ]
+
+};
+
+
+/* =====================================================
+   VARIABLES
+===================================================== */
+
+let listaActual = [];
+let numeroListaActual = null;
+let indiceFrase = 0;
+
+let modoSecuenciaActivo = null;
+let indiceSecuencia = 0;
+let secuenciaDetenida = false;
+
+const synth = window.speechSynthesis;
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+function enviarEnlaceAcceso() {
+
+    const email =
+        document
+        .getElementById("emailInput")
+        .value
+        .trim();
+
+    const mensaje =
+        document.getElementById("loginMessage");
+
+
+    if (
+        !email ||
+        !email.includes("@")
+    ) {
+
+        mensaje.textContent =
+            "Introduce un correo válido.";
+
+        return;
+    }
+
+
+    const actionCodeSettings = {
+
+        url:
+        "https://juandagarre.github.io/Libros_1-4/",
+
+        handleCodeInApp: true
+
+    };
+
+
+    mensaje.textContent =
+        "Enviando enlace...";
+
+
+    auth.sendSignInLinkToEmail(
+        email,
+        actionCodeSettings
+    )
+    .then(function() {
+
+        /*
+           Guardamos el correo para poder completar
+           el acceso cuando el usuario pulse el enlace.
+        */
+
+        window.localStorage.setItem(
+            "emailForSignIn",
+            email
+        );
+
+
+        mensaje.textContent =
+            "Enlace enviado. Revisa tu correo.";
+
+    })
+    .catch(function(error) {
+
+        console.error(error);
+
+        mensaje.textContent =
+            "No se pudo enviar el enlace: " +
+            error.message;
+
+    });
+
+}
+
+
+/* =====================================================
+   COMPROBAR ENLACE DE FIREBASE
+===================================================== */
+
+if (
+    auth.isSignInWithEmailLink(
+        window.location.href
+    )
+) {
+
+    let email =
+        window.localStorage.getItem(
+            "emailForSignIn"
+        );
+
+
+    if (!email) {
+
+        email = prompt(
+            "Introduce de nuevo tu correo electrónico:"
+        );
+
+    }
+
+
+    if (email) {
+
+        auth.signInWithEmailLink(
+            email,
+            window.location.href
+        )
+        .then(function(result) {
+
+            window.localStorage.removeItem(
+                "emailForSignIn"
+            );
+
+
+            /*
+               ACCESO CORRECTO.
+
+               Ahora enviamos el aviso por EmailJS.
+            */
+
+            enviarAvisoEmailJS(
+                result.user.email
+            );
+
+
+            /*
+               Y abrimos la aplicación.
+            */
+
+            iniciarAplicacion();
+
+        })
+        .catch(function(error) {
+
+            console.error(error);
+
+            document
+                .getElementById("loginMessage")
+                .textContent =
+                "No se pudo completar el acceso: " +
+                error.message;
+
+        });
+
+    }
+
+}
+
+
+/* =====================================================
+   ESTADO DE AUTENTICACIÓN
+===================================================== */
+
+auth.onAuthStateChanged(function(user) {
+
+    if (user) {
+
+        iniciarAplicacion();
+
+    }
+
+});
+
+
+/* =====================================================
+   INICIAR APLICACIÓN
+===================================================== */
+
+function iniciarAplicacion() {
+
+    document
+        .getElementById("loginView")
+        .classList
+        .add("hidden");
+
+
+    document
+        .getElementById("menuView")
+        .classList
+        .remove("hidden");
+
+
+    generarLibros();
+
+}
+
+
+/* =====================================================
+   GENERAR LIBROS
+===================================================== */
+
+function generarLibros() {
+
+    const contenedor =
+        document.getElementById(
+            "bookButtons"
+        );
+
+    contenedor.innerHTML = "";
+
+
+    for (
+        let i = 1;
+        i <= 4;
+        i++
+    ) {
+
+        const boton =
+            document.createElement("button");
+
+        boton.textContent =
+            "Libro " + i;
+
+
+        boton.onclick =
+            function() {
+
+                seleccionarLibro(i);
+
+            };
+
+
+        contenedor.appendChild(
+            boton
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   GENERAR LISTAS
+===================================================== */
+
+function seleccionarLibro(
+    numeroLibro
+) {
+
+    const contenedor =
+        document.getElementById(
+            "listButtons"
+        );
+
+    contenedor.innerHTML = "";
+
+
+    const inicio =
+        101 +
+        (numeroLibro - 1) * 30;
+
+
+    for (
+        let i = 0;
+        i < 30;
+        i++
+    ) {
+
+        const numero =
+            inicio + i;
+
+
+        const boton =
+            document.createElement("button");
+
+
+        boton.textContent =
+            numero;
+
+
+        boton.onclick =
+            function() {
+
+                cargarLista(numero);
+
+            };
+
+
+        contenedor.appendChild(
+            boton
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   CARGAR LISTA
+===================================================== */
+
+function cargarLista(numero) {
+
+    detenerAudio();
+
+
+    /*
+       IMPORTANTE:
+       Ya no utilizamos la lista 101 como
+       sustituta silenciosa si falta una lista.
+    */
+
+    if (
+        !Array.isArray(
+            baseDatosListas[numero]
+        )
+    ) {
+
+        alert(
+            "La lista " +
+            numero +
+            " todavía no está incluida."
+        );
+
+        return;
+    }
+
+
+    numeroListaActual =
+        numero;
+
+
+    listaActual =
+        baseDatosListas[numero];
+
+
+    indiceFrase = 0;
+
+
+    document
+        .getElementById("menuView")
+        .classList
+        .add("hidden");
+
+
+    document
+        .getElementById("studyView")
+        .classList
+        .remove("hidden");
+
+
+    document
+        .getElementById("sequenceView")
+        .classList
+        .add("hidden");
+
+
+    document
+        .getElementById("studyTitle")
+        .textContent =
+        "Lista " + numero;
+
+
+    actualizarFrase();
+
+}
+
+
+/* =====================================================
+   ACTUALIZAR FRASE
+===================================================== */
+
+function actualizarFrase() {
+
+    if (
+        !listaActual.length
+    ) {
+
+        return;
+    }
+
+
+    const frase =
+        listaActual[
+            indiceFrase
+        ];
+
+
+    document
+        .getElementById("phraseEN")
+        .textContent =
+        frase.en;
+
+
+    document
+        .getElementById("phraseES")
+        .textContent =
+        frase.es;
+
+
+    document
+        .getElementById("phraseEN")
+        .style.display =
+        "block";
+
+
+    document
+        .getElementById("phraseES")
+        .style.display =
+        "block";
+
+}
+
+
+/* =====================================================
+   MOSTRAR IDIOMAS
+===================================================== */
+
+function mostrarIngles() {
+
+    document
+        .getElementById("phraseEN")
+        .style.display =
+        "block";
+
+
+    document
+        .getElementById("phraseES")
+        .style.display =
+        "none";
+
+}
+
+
+function mostrarEspanol() {
+
+    document
+        .getElementById("phraseEN")
+        .style.display =
+        "none";
+
+
+    document
+        .getElementById("phraseES")
+        .style.display =
+        "block";
+
+}
+
+
+/* =====================================================
+   HABLAR
+===================================================== */
+
+function hablar(
+    texto,
+    idioma,
+    velocidad
+) {
+
+    const utterance =
+        new SpeechSynthesisUtterance(
+            texto
+        );
+
+
+    utterance.lang =
+        idioma;
+
+
+    utterance.rate =
+        velocidad;
+
+
+    utterance.pitch = 1;
+
+
+    const voces =
+        synth.getVoices();
+
+
+    const voz =
+        voces.find(
+            function(v) {
+
+                return (
+                    v.lang === idioma
+                );
+
+            }
+        );
+
+
+    if (voz) {
+
+        utterance.voice =
+            voz;
+
+    }
+
+
+    synth.speak(
+        utterance
+    );
+
+}
+
+
+/* =====================================================
+   AUDIO DE UNA FRASE
+===================================================== */
+
+function escucharIngles() {
+
+    detenerAudio();
+
+
+    hablar(
+        listaActual[indiceFrase].en,
+        "en-US",
+        1
+    );
+
+}
+
+
+function escucharEspanol() {
+
+    detenerAudio();
+
+
+    hablar(
+        listaActual[indiceFrase].es,
+        "es-ES",
+        1
+    );
+
+}
+
+
+/* =====================================================
+   NAVEGACIÓN CIRCULAR
+===================================================== */
+
+function siguienteFrase() {
+
+    if (
+        !listaActual.length
+    ) {
+
+        return;
+    }
+
+
+    detenerAudio();
+
+
+    indiceFrase =
+        (
+            indiceFrase + 1
+        ) %
+        listaActual.length;
+
+
+    actualizarFrase();
+
+}
+
+
+function anteriorFrase() {
+
+    if (
+        !listaActual.length
+    ) {
+
+        return;
+    }
+
+
+    detenerAudio();
+
+
+    indiceFrase =
+        (
+            indiceFrase -
+            1 +
+            listaActual.length
+        ) %
+        listaActual.length;
+
+
+    actualizarFrase();
+
+}
+
+
+/* =====================================================
+   VISTA SECUENCIAL
+===================================================== */
+
+function abrirVistaSecuencial() {
+
+    detenerAudio();
+
+
+    document
+        .getElementById("studyView")
+        .classList
+        .add("hidden");
+
+
+    document
+        .getElementById("sequenceView")
+        .classList
+        .remove("hidden");
+
+
+    cargarVoces();
+
+}
+
+
+function volverAlEstudio() {
+
+    detenerAudio();
+
+
+    document
+        .getElementById("sequenceView")
+        .classList
+        .add("hidden");
+
+
+    document
+        .getElementById("studyView")
+        .classList
+        .remove("hidden");
+
+
+    actualizarFrase();
+
+}
+
+
+/* =====================================================
+   VOLVER AL MENÚ
+===================================================== */
+
+function volverAlMenu() {
+
+    detenerAudio();
+
+
+    document
+        .getElementById("studyView")
+        .classList
+        .add("hidden");
+
+
+    document
+        .getElementById("sequenceView")
+        .classList
+        .add("hidden");
+
+
+    document
+        .getElementById("menuView")
+        .classList
+        .remove("hidden");
+
+
+    generarLibros();
+
+
+    document
+        .getElementById("listButtons")
+        .innerHTML = "";
+
+}
+
+
+/* =====================================================
+   CARGAR VOCES
+===================================================== */
+
+function cargarVoces() {
+
+    const voces =
+        synth.getVoices();
+
+
+    const english =
+        document.getElementById(
+            "englishVoice"
+        );
+
+
+    const spanish =
+        document.getElementById(
+            "spanishVoice"
+        );
+
+
+    const valorAnteriorEN =
+        english.value;
+
+
+    const valorAnteriorES =
+        spanish.value;
+
+
+    english.innerHTML = "";
+    spanish.innerHTML = "";
+
+
+    voces
+        .filter(function(v) {
+
+            return v.lang
+                .toLowerCase()
+                .startsWith("en");
+
+        })
+        .forEach(function(v) {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                v.lang;
+
+
+            option.textContent =
+                v.name +
+                " (" +
+                v.lang +
+                ")";
+
+
+            english.appendChild(
+                option
+            );
+
+        });
+
+
+    voces
+        .filter(function(v) {
+
+            return v.lang
+                .toLowerCase()
+                .startsWith("es");
+
+        })
+        .forEach(function(v) {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                v.lang;
+
+
+            option.textContent =
+                v.name +
+                " (" +
+                v.lang +
+                ")";
+
+
+            spanish.appendChild(
+                option
+            );
+
+        });
+
+
+    if (
+        valorAnteriorEN &&
+        [...english.options]
+            .some(
+                o =>
+                o.value ===
+                valorAnteriorEN
+            )
+    ) {
+
+        english.value =
+            valorAnteriorEN;
+
+    }
+    else if (
+        [...english.options]
+            .some(
+                o =>
+                o.value ===
+                "en-US"
+            )
+    ) {
+
+        english.value =
+            "en-US";
+
+    }
+
+
+    if (
+        valorAnteriorES &&
+        [...spanish.options]
+            .some(
+                o =>
+                o.value ===
+                valorAnteriorES
+            )
+    ) {
+
+        spanish.value =
+            valorAnteriorES;
+
+    }
+    else if (
+        [...spanish.options]
+            .some(
+                o =>
+                o.value ===
+                "es-ES"
+            )
+    ) {
+
+        spanish.value =
+            "es-ES";
+
+    }
+
+}
+
+
+if (
+    "speechSynthesis" in window
+) {
+
+    synth.onvoiceschanged =
+        cargarVoces;
+
+
+    setTimeout(
+        cargarVoces,
+        500
+    );
+
+}
+
+
+/* =====================================================
+   CONTROL AUDIO
+===================================================== */
+
+function detenerAudio() {
+
+    synth.cancel();
+
+    secuenciaDetenida =
+        true;
+
+}
+
+
+function pausarAudio() {
+
+    if (
+        synth.speaking
+    ) {
+
+        synth.pause();
+
+    }
+
+}
+
+
+function reanudarAudio() {
+
+    if (
+        synth.paused
+    ) {
+
+        synth.resume();
+
+    }
+
+}
+
+
+/* =====================================================
+   REPRODUCCIÓN SECUENCIAL
+===================================================== */
+
+function reproducirSecuencia(
+    modo
+) {
+
+    if (
+        !listaActual.length
+    ) {
+
+        return;
+    }
+
+
+    detenerAudio();
+
+
+    modoSecuenciaActivo =
+        modo;
+
+
+    indiceSecuencia = 0;
+
+
+    secuenciaDetenida =
+        false;
+
+
+    reproducirSiguiente();
+
+}
+
+
+/* =====================================================
+   OBTENER PASOS
+===================================================== */
+
+function obtenerPasos(
+    modo,
+    frase
+) {
+
+    const vozEN =
+        document
+        .getElementById(
+            "englishVoice"
+        )
+        .value;
+
+
+    const vozES =
+        document
+        .getElementById(
+            "spanishVoice"
+        )
+        .value;
+
+
+    if (
+        modo === "en"
+    ) {
+
+        return [
+            {
+                texto: frase.en,
+                idioma: vozEN
+            }
+        ];
+
+    }
+
+
+    if (
+        modo === "es"
+    ) {
+
+        return [
+            {
+                texto: frase.es,
+                idioma: vozES
+            }
+        ];
+
+    }
+
+
+    if (
+        modo === "en-es"
+    ) {
+
+        return [
+
+            {
+                texto: frase.en,
+                idioma: vozEN
+            },
+
+            {
+                texto: frase.es,
+                idioma: vozES
+            }
+
+        ];
+
+    }
+
+
+    return [
+
+        {
+            texto: frase.es,
+            idioma: vozES
+        },
+
+        {
+            texto: frase.en,
+            idioma: vozEN
+        }
+
+    ];
+
+}
+
+
+/* =====================================================
+   SIGUIENTE ELEMENTO DE LA SECUENCIA
+===================================================== */
+
+function reproducirSiguiente() {
+
+    if (
+        secuenciaDetenida
+    ) {
+
+        return;
+    }
+
+
+    if (
+        indiceSecuencia >=
+        listaActual.length
+    ) {
+
+        return;
+    }
+
+
+    const frase =
+        listaActual[
+            indiceSecuencia
+        ];
+
+
+    const pasos =
+        obtenerPasos(
+            modoSecuenciaActivo,
+            frase
+        );
+
+
+    let paso =
+        0;
+
+
+    const velocidad =
+        parseFloat(
+            document
+            .getElementById(
+                "speedSelect"
+            )
+            .value
+        );
+
+
+    if (
+        modoSecuenciaActivo ===
+        "es" ||
+        modoSecuenciaActivo ===
+        "es-en"
+    ) {
+
+        document
+            .getElementById(
+                "visualizacion"
+            )
+            .textContent =
+            frase.es;
+
+    }
+    else {
+
+        document
+            .getElementById(
+                "visualizacion"
+            )
+            .textContent =
+            frase.en;
+
+    }
+
+
+    function siguientePaso() {
+
+        if (
+            secuenciaDetenida
+        ) {
+
+            return;
+        }
+
+
+        if (
+            paso >=
+            pasos.length
+        ) {
+
+            indiceSecuencia++;
+
+            reproducirSiguiente();
+
+            return;
+
+        }
+
+
+        const item =
+            pasos[paso++];
+
+
+        const utterance =
+            new SpeechSynthesisUtterance(
+                item.texto
+            );
+
+
+        utterance.lang =
+            item.idioma;
+
+
+        utterance.rate =
+            velocidad;
+
+
+        utterance.pitch = 1;
+
+
+        const voz =
+            synth
+            .getVoices()
+            .find(
+                function(v) {
+
+                    return (
+                        v.lang ===
+                        item.idioma
+                    );
+
+                }
+            );
+
+
+        if (voz) {
+
+            utterance.voice =
+                voz;
+
+        }
+
+
+        utterance.onend =
+            siguientePaso;
+
+
+        utterance.onerror =
+            function() {
+
+                if (
+                    !secuenciaDetenida
+                ) {
+
+                    siguientePaso();
+
+                }
+
+            };
+
+
+        synth.speak(
+            utterance
+        );
+
+    }
+
+
+    siguientePaso();
+
+}
+
+
+/* =====================================================
+   VISUALIZACIÓN
+===================================================== */
+
+function mostrarSecuenciaEN() {
+
+    mostrarSecuencia(
+        "en"
+    );
+
+}
+
+
+function mostrarSecuenciaES() {
+
+    mostrarSecuencia(
+        "es"
+    );
+
+}
+
+
+function mostrarSecuenciaENES() {
+
+    mostrarSecuencia(
+        "en-es"
+    );
+
+}
+
+
+function mostrarSecuenciaESEN() {
+
+    mostrarSecuencia(
+        "es-en"
+    );
+
+}
+
+
+function mostrarSecuencia(
+    modo
+) {
+
+    let texto = "";
+
+
+    listaActual.forEach(
+        function(frase, i) {
+
+            if (
+                modo === "en"
+            ) {
+
+                texto +=
+                    (i + 1) +
+                    ". " +
+                    frase.en +
+                    "<br><br>";
+
+            }
+
+
+            if (
+                modo === "es"
+            ) {
+
+                texto +=
+                    (i + 1) +
+                    ". " +
+                    frase.es +
+                    "<br><br>";
+
+            }
+
+
+            if (
+                modo === "en-es"
+            ) {
+
+                texto +=
+                    (i + 1) +
+                    ". " +
+                    frase.en +
+                    "<br>" +
+                    frase.es +
+                    "<br><br>";
+
+            }
+
+
+            if (
+                modo === "es-en"
+            ) {
+
+                texto +=
+                    (i + 1) +
+                    ". " +
+                    frase.es +
+                    "<br>" +
+                    frase.en +
+                    "<br><br>";
+
+            }
+
+        }
+    );
+
+
+    document
+        .getElementById(
+            "visualizacion"
+        )
+        .innerHTML =
+        texto;
+
+}
+
+
+/* =====================================================
+   ARRANQUE
+===================================================== */
+
+generarLibros();
+
+</script>
+
+</body>
+</html>
