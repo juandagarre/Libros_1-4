@@ -6644,17 +6644,16 @@
     };
 
         
-            
-
-                let libroActual = 1;
+    let libroActual = 1;
     let listaActual = 101;
     let indiceFrase = 0;
     let listaFrasesActiva = [];
     
-    // Declaración global del motor de voz para evitar fallos
+    // Declaración global del motor de voz
     const synth = window.speechSynthesis;
     let indiceSecuencia = 0;
     let reproduciendoActivo = false;
+    let modoActualSecuencia = 'EN';
 
     function seleccionarLibro(numLibro) {
         libroActual = numLibro;
@@ -6785,15 +6784,27 @@
     }
 
     function reproducirSecuencia(modo) {
+        modoActualSecuencia = modo;
+        indiceSecuencia = 0; // Reinicia al principio al pulsar un botón verde nuevo
+        iniciarBucleReproduccion();
+    }
+
+    function reanudarAudio() {
+        if (!reproduciendoActivo) {
+            iniciarBucleReproduccion(); // Retoma exactamente desde la frase donde se pausó
+        }
+    }
+
+    function iniciarBucleReproduccion() {
         synth.cancel();
         if (listaFrasesActiva.length === 0) return;
 
-        indiceSecuencia = 0;
         reproduciendoActivo = true;
 
         const velocidad = parseFloat(document.getElementById('velocidad-lectura').value) || 1;
         const vozEnLang = document.getElementById('select-voz-en').value || 'en-US';
         const vozEsLang = document.getElementById('select-voz-es').value || 'es-ES';
+        const modo = modoActualSecuencia;
 
         function reproducirSiguiente() {
             if (!reproduciendoActivo || indiceSecuencia >= listaFrasesActiva.length) {
@@ -6849,28 +6860,10 @@
         synth.speak(utter);
     }
 
-
-
     function pausarAudio() {
         reproduciendoActivo = false;
-        synth.pause();
+        synth.cancel(); // Detiene el sonido limpiamente y mantiene el índice listo para reanudar
     }
-
-    function reanudarAudio() {
-        if (synth.paused) {
-            reproduciendoActivo = true;
-            synth.resume();
-        } else if (!reproduciendoActivo && synth.speaking) {
-            reproduciendoActivo = true;
-            synth.resume();
-        }
-    }
-
-
-
-
-    
-    
 </script>
 
 <script>
@@ -6951,3 +6944,4 @@
     }
 </script>
 </html>
+   
