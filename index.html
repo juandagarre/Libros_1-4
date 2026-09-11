@@ -941,9 +941,7 @@ function comprobarEnlaceFirebase() {
         );
 
 
-        enviarAvisoEmailJS(
-            result.user.email
-        );
+        
 
     })
     .catch(function(error) {
@@ -977,6 +975,8 @@ function comprobarEnlaceFirebase() {
    ESTADO DE AUTENTICACIÓN
 ===================================================== */
 
+let usuarioAvisado = null;
+
 function iniciarControlAutenticacion() {
 
     const {
@@ -984,20 +984,35 @@ function iniciarControlAutenticacion() {
         onAuthStateChanged
     } = window.firebaseAuth;
 
-
     onAuthStateChanged(
         auth,
         function(user) {
 
             if (user) {
 
+                /*
+                   Si es un usuario que acaba de entrar
+                   o si Firebase ha recuperado una sesión
+                   existente, enviamos el aviso una vez.
+                */
+                if (usuarioAvisado !== user.uid) {
+
+                    usuarioAvisado = user.uid;
+
+                    enviarAvisoEmailJS(
+                        user.email
+                    );
+                }
+
                 iniciarAplicacion();
 
-            }
+            } else {
 
+                usuarioAvisado = null;
+
+            }
         }
     );
-
 }
 
 
