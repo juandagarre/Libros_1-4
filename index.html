@@ -6849,15 +6849,28 @@
         synth.speak(utter);
     }
 
+
+
     function pausarAudio() {
         reproduciendoActivo = false;
         synth.pause();
     }
 
     function reanudarAudio() {
-        reproduciendoActivo = true;
-        synth.resume();
+        if (synth.paused) {
+            reproduciendoActivo = true;
+            synth.resume();
+        } else if (!reproduciendoActivo && synth.speaking) {
+            reproduciendoActivo = true;
+            synth.resume();
+        }
     }
+
+
+
+
+    
+    
 </script>
 
 <script>
