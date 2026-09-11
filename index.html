@@ -295,8 +295,9 @@
     </div>
 </div>
 
+
 <script>
-    // --- CONFIGURACIÓN DE FIREBASE ---
+    // --- 1. CONFIGURACIÓN ÚNICA Y CORRECTA DE FIREBASE Y EMAILJS ---
     const firebaseConfig = {
         apiKey: "AIzaSyC_s5suiACPV_itJAq4XcR3tEXOPoGfT6M",
         authDomain: "libros-1-4.firebaseapp.com",
@@ -304,21 +305,17 @@
     };
     firebase.initializeApp(firebaseConfig);
 
-    // --- CONFIGURACIÓN DE EMAILJS ---
+    // Inicializar EmailJS con su clave pública real
     (function(){
         emailjs.init("UgKsBw8SRMgYBoPy3KWgx");
     })();
 
     const actionCodeSettings = {
-        url: 'https://juandagarre.github.io/Libros_1-4/', // URL exacta de tu GitHub Pages
+        url: 'https://juandagarre.github.io/Libros_1-4/', 
         handleCodeInApp: true,
     };
 
-
-
-    
-    
-
+    // --- 2. FUNCIÓN DE ENVÍO DE ENLACE MÁGICO ---
     function enviarEnlaceLogin() {
         const email = document.getElementById('email-usuario').value;
         const mensaje = document.getElementById('mensaje-login');
@@ -341,7 +338,7 @@
             });
     }
 
-        // Comprobar si el usuario vuelve mediante el enlace del correo
+    // --- 3. PROCESAR EL ACCESO CUANDO EL USUARIO CLICA EL ENLACE ---
     if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
         let email = window.localStorage.getItem('emailForSignIn');
         if (!email) {
@@ -352,11 +349,9 @@
             firebase.auth().signInWithEmailLink(email, window.location.href)
                 .then((result) => {
                     window.localStorage.removeItem('emailForSignIn');
-                    
-                    // Limpiar la URL para quitar los códigos largos de Firebase
                     window.history.replaceState({}, document.title, window.location.pathname);
 
-                    // Enviar notificación por EmailJS
+                    // Notificación interna vía EmailJS al entrar con éxito
                     emailjs.send("service_ft1wkhu", "template_4acbswy", {
                         usuario_email: email,
                         fecha_ingreso: new Date().toLocaleString()
@@ -370,12 +365,19 @@
         }
     }
 
-    
+    // Mantener la sesión activa si ya recarga dentro de la app
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            iniciarAplicacion();
+        }
+    });
 
     function iniciarAplicacion() {
         document.getElementById('vista-login').classList.add('oculto');
         document.getElementById('vista-menu').classList.remove('oculto');
-        seleccionarLibro(1);
+        if (typeof seleccionarLibro === 'function') {
+            seleccionarLibro(1);
+        }
     }
 </script>
 
@@ -6664,281 +6666,6 @@
             }
         });
 
-        let inicioLista = numLibro * 100 + 1;
-        let finLista = inicioLista + 29;
-
-        const contenedorListas = document.getElementById('contenedor-listas');
-        contenedorListas.innerHTML = '';
-
-        for (let i = inicioLista; i <= finLista; i++) {
-            const btn = document.createElement('button');
-            btn.className = 'btn-lista';
-            btn.innerText = `Lista ${i}`;
-            btn.onclick = () => cargarLista(i);
-            contenedorListas.appendChild(btn);
-        }
-    }
-
-    function cargarLista(numLista) {
-        listaActual = numLista;
-        listaFrasesActiva = baseDatosListas[numLista] || baseDatosListas[101];
-        indiceFrase = 0;
-
-        document.getElementById('vista-menu').classList.add('oculto');
-        document.getElementById('vista-estudio').classList.remove('oculto');
         
-        actualizarFraseUI();
-    }
-
-    function actualizarFraseUI() {
-        document.getElementById('marcador').innerText = `Frase ${indiceFrase + 1} de ${listaFrasesActiva.length} (Lista ${listaActual})`;
-        document.getElementById('ingles').innerText = listaFrasesActiva[indiceFrase].en;
-        document.getElementById('espanol').innerText = listaFrasesActiva[indiceFrase].es;
-        
-        document.getElementById('ingles').style.display = 'none';
-        document.getElementById('espanol').style.display = 'none';
-    }
-
-    function mostrarIngles() {
-        const el = document.getElementById('ingles');
-        el.style.display = el.style.display === 'none' ? 'flex' : 'none';
-    }
-
-    function mostrarEspanol() {
-        const el = document.getElementById('espanol');
-        el.style.display = el.style.display === 'none' ? 'flex' : 'none';
-    }
-
-    function siguienteFrase() {
-        if (indiceFrase < listaFrasesActiva.length - 1) {
-            indiceFrase++;
-            actualizarFraseUI();
-        }
-    }
-
-    function anteriorFrase() {
-        if (indiceFrase > 0) {
-            indiceFrase--;
-            actualizarFraseUI();
-        }
-    }
-
-    function volverAlMenu() {
-        reproduciendoActivo = false;
-        synth.cancel();
-        document.getElementById('vista-estudio').classList.add('oculto');
-        document.getElementById('vista-secuencial').classList.add('oculto');
-        document.getElementById('vista-menu').classList.remove('oculto');
-    }
-
-    function volverAEstudio() {
-        reproduciendoActivo = false;
-        synth.cancel();
-        document.getElementById('vista-secuencial').classList.add('oculto');
-        document.getElementById('vista-estudio').classList.remove('oculto');
-    }
-
-    function abrirVistaSecuencial() {
-        document.getElementById('vista-estudio').classList.add('oculto');
-        document.getElementById('vista-secuencial').classList.remove('oculto');
-        document.getElementById('info-secuencial').innerText = `Libro ${libroActual} - Lista ${listaActual}`;
-    }
-
-    function leerIngles() {
-        synth.cancel();
-        const texto = listaFrasesActiva[indiceFrase].en;
-        const utterance = new SpeechSynthesisUtterance(texto);
-        utterance.lang = 'en-US';
-        synth.speak(utterance);
-    }
-
-    function leerEspanol() {
-        synth.cancel();
-        const texto = listaFrasesActiva[indiceFrase].es;
-        const utterance = new SpeechSynthesisUtterance(texto);
-        utterance.lang = 'es-ES';
-        synth.speak(utterance);
-    }
-
-    function ocultarTextoSecuencial() {
-        document.getElementById('contenedor-visualizacion').classList.add('oculto');
-    }
-
-    function visualizarTexto(modo) {
-        const contenedor = document.getElementById('contenedor-visualizacion');
-        contenedor.classList.remove('oculto');
-        contenedor.innerHTML = '';
-
-        listaFrasesActiva.forEach((item, idx) => {
-            const div = document.createElement('div');
-            div.className = 'item-visualizado';
-            if (modo === 'EN') div.innerText = `${idx + 1}. ${item.en}`;
-            if (modo === 'ES') div.innerText = `${idx + 1}. ${item.es}`;
-            if (modo === 'EN-ES') div.innerText = `${idx + 1}. ${item.en} — ${item.es}`;
-            if (modo === 'ES-EN') div.innerText = `${idx + 1}. ${item.es} — ${item.en}`;
-            contenedor.appendChild(div);
-        });
-    }
-
-    function reproducirSecuencia(modo) {
-        modoActualSecuencia = modo;
-        indiceSecuencia = 0; // Reinicia al principio al pulsar un botón verde nuevo
-        iniciarBucleReproduccion();
-    }
-
-    function reanudarAudio() {
-        if (!reproduciendoActivo) {
-            iniciarBucleReproduccion(); // Retoma exactamente desde la frase donde se pausó
-        }
-    }
-
-    function iniciarBucleReproduccion() {
-        synth.cancel();
-        if (listaFrasesActiva.length === 0) return;
-
-        reproduciendoActivo = true;
-
-        const velocidad = parseFloat(document.getElementById('velocidad-lectura').value) || 1;
-        const vozEnLang = document.getElementById('select-voz-en').value || 'en-US';
-        const vozEsLang = document.getElementById('select-voz-es').value || 'es-ES';
-        const modo = modoActualSecuencia;
-
-        function reproducirSiguiente() {
-            if (!reproduciendoActivo || indiceSecuencia >= listaFrasesActiva.length) {
-                reproduciendoActivo = false;
-                return;
-            }
-
-            const fraseObj = listaFrasesActiva[indiceSecuencia];
-            
-            if (modo === 'EN') {
-                hablarTexto(fraseObj.en, vozEnLang, velocidad, () => {
-                    indiceSecuencia++;
-                    reproducirSiguiente();
-                });
-            } else if (modo === 'ES') {
-                hablarTexto(fraseObj.es, vozEsLang, velocidad, () => {
-                    indiceSecuencia++;
-                    reproducirSiguiente();
-                });
-            } else if (modo === 'EN-ES') {
-                hablarTexto(fraseObj.en, vozEnLang, velocidad, () => {
-                    if (!reproduciendoActivo) return;
-                    hablarTexto(fraseObj.es, vozEsLang, velocidad, () => {
-                        indiceSecuencia++;
-                        reproducirSiguiente();
-                    });
-                });
-            } else if (modo === 'ES-EN') {
-                hablarTexto(fraseObj.es, vozEsLang, velocidad, () => {
-                    if (!reproduciendoActivo) return;
-                    hablarTexto(fraseObj.en, vozEnLang, velocidad, () => {
-                        indiceSecuencia++;
-                        reproducirSiguiente();
-                    });
-                });
-            }
-        }
-
-        reproducirSiguiente();
-    }
-
-    function hablarTexto(texto, lang, velocidad, onEndCallback) {
-        if (!reproduciendoActivo) return;
-        let utter = new SpeechSynthesisUtterance(texto);
-        utter.lang = lang;
-        utter.rate = velocidad;
-        utter.onend = () => {
-            if (onEndCallback) onEndCallback();
-        };
-        utter.onerror = () => {
-            if (onEndCallback) onEndCallback();
-        };
-        synth.speak(utter);
-    }
-
-    function pausarAudio() {
-        reproduciendoActivo = false;
-        synth.cancel(); // Detiene el sonido limpiamente y mantiene el índice listo para reanudar
-    }
-</script>
-
-<script>
-    // --- CONFIGURACIÓN DE FIREBASE ---
-    const firebaseConfig = {
-        apiKey: "UgKsBw8SRMgYBoPy3KWgx",
-        authDomain: "libros-1-4.firebaseapp.com",
-        projectId: "libros-1-4"
-    };
-    firebase.initializeApp(firebaseConfig);
-
-    // --- CONFIGURACIÓN DE EMAILJS ---
-    (function(){
-        emailjs.init("UgKsBw8SRMgYBoPy3KWgx");
-    })();
-
-    const actionCodeSettings = {
-        url: window.location.href,
-        handleCodeInApp: true,
-    };
-
-    // --- FUNCIÓN DE ENVÍO DE ENLACE MÁGICO ---
-    function enviarEnlaceLogin() {
-        const email = document.getElementById('email-usuario').value;
-        const mensaje = document.getElementById('mensaje-login');
-
-        if (!email) {
-            mensaje.style.color = "red";
-            mensaje.innerText = "Por favor, introduce un correo válido.";
-            return;
-        }
-
-        firebase.auth().sendSignInLinkToEmail(email, actionCodeSettings)
-            .then(() => {
-                window.localStorage.setItem('emailForSignIn', email);
-                mensaje.style.color = "#27ae60";
-                mensaje.innerText = "¡Enlace enviado! Revisa tu bandeja de entrada.";
-                
-                emailjs.send("service_ft1wkhu", "template_4acbswy", {
-                    usuario_email: email,
-                    fecha_ingreso: new Date().toLocaleString()
-                }).catch(err => console.error("Error EmailJS:", err));
-            })
-            .catch((error) => {
-                mensaje.style.color = "red";
-                mensaje.innerText = "Error: " + error.message;
-            });
-    }
-
-    // --- COMPROBAR SI EL USUARIO VUELVE DESDE EL CORREO ---
-    firebase.auth().isSignInWithEmailLink(window.location.href)
-        .then((isSignIn) => {
-            if (isSignIn) {
-                let email = window.localStorage.getItem('emailForSignIn');
-                if (!email) {
-                    email = window.prompt('Por favor, confirma tu correo electrónico:');
-                }
-                firebase.auth().signInWithEmailLink(email, window.location.href)
-                    .then((result) => {
-                        window.localStorage.removeItem('emailForSignIn');
-                        iniciarAplicacion();
-                    })
-                    .catch((error) => {
-                        alert("Error al verificar el enlace: " + error.message);
-                    });
-            }
-        });
-
-    firebase.auth().onAuthStateChanged((user) => {
-        if (user) {
-            iniciarAplicacion();
-        }
-    });
-
-    function iniciarAplicacion() {
-        document.getElementById('vista-login').classList.add('oculto');
-        document.getElementById('vista-menu').classList.remove('oculto');
-    }
-</script>
 </html>
    
