@@ -545,15 +545,57 @@ const EMAILJS_TEMPLATE =
 
 function enviarAvisoEmailJS(emailUsuario) {
 
+    console.log("EMAILJS: intentando enviar aviso");
+    console.log("Usuario:", emailUsuario);
+
     const parametros = {
-
-        usuario_email:
-            emailUsuario,
-
-        fecha_ingreso:
-            new Date().toLocaleString("es-ES")
-
+        usuario_email: emailUsuario,
+        fecha_ingreso: new Date().toLocaleString("es-ES")
     };
+
+    try {
+
+        emailjs.send(
+            EMAILJS_SERVICE,
+            EMAILJS_TEMPLATE,
+            parametros
+        )
+        .then(function(response) {
+
+            console.log(
+                "EMAILJS: ENVIADO CORRECTAMENTE",
+                response.status,
+                response.text
+            );
+
+        })
+        .catch(function(error) {
+
+            console.error(
+                "EMAILJS: ERROR AL ENVIAR",
+                error
+            );
+
+            alert(
+                "Error de EmailJS: " +
+                (error.text || error.message || JSON.stringify(error))
+            );
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "EMAILJS: ERROR DIRECTO",
+            error
+        );
+
+        alert(
+            "Error directo de EmailJS: " +
+            error.message
+        );
+    }
+}
 
     emailjs.send(
         EMAILJS_SERVICE,
