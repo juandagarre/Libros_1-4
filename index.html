@@ -5,11 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Libros 1-4</title>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<!-- =====================================================
+     FIREBASE MODULAR 10.8.0
+===================================================== -->
+
+<script type="module">
+    import {
+        initializeApp
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+    import {
+        getAuth,
+        sendSignInLinkToEmail,
+        isSignInWithEmailLink,
+        signInWithEmailLink,
+        onAuthStateChanged,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    /* =====================================================
+       CONFIGURACIÓN FIREBASE
+    ===================================================== */
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC_s5suiACPV_itJAq4XcR3tEXOPoGfT6M",
+        authDomain: "libros-1-4.firebaseapp.com",
+        projectId: "libros-1-4",
+        storageBucket: "libros-1-4.firebasestorage.app",
+        messagingSenderId: "237321156874",
+        appId: "1:237321156874:web:c7ec6434e62ab84328a2f3",
+        measurementId: "G-FF9CX8VK81"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    /* =====================================================
+       HACER DISPONIBLE FIREBASE PARA EL RESTO DEL SCRIPT
+    ===================================================== */
+
+    window.firebaseAuth = {
+        auth,
+        sendSignInLinkToEmail,
+        isSignInWithEmailLink,
+        signInWithEmailLink,
+        onAuthStateChanged,
+        signOut
+    };
+</script>
+
+<!-- EMAILJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
+
 <style>
+
 * {
     box-sizing: border-box;
 }
@@ -31,18 +81,22 @@ body {
     box-shadow: 0 2px 10px #bbb;
 }
 
-h1, h2 {
+h1,
+h2 {
     text-align: center;
 }
 
-input, select, button {
+input,
+select,
+button {
     font-size: 18px;
     padding: 12px;
     margin: 6px;
     border-radius: 8px;
 }
 
-input, select {
+input,
+select {
     border: 1px solid #aaa;
     width: calc(100% - 12px);
 }
@@ -92,7 +146,8 @@ button:hover {
     text-align: center;
 }
 
-/* Amarillo */
+/* AMARILLO */
+
 .btn-espanol,
 .btn-visualizar {
     background: #ffd900;
@@ -100,7 +155,8 @@ button:hover {
     font-weight: bold;
 }
 
-/* Rosa fuerte */
+/* ROSA FUERTE */
+
 .btn-navegacion-rosa {
     background: #ff1493;
     color: white;
@@ -154,6 +210,7 @@ hr {
         font-size: 16px;
     }
 }
+
 </style>
 </head>
 
@@ -180,9 +237,11 @@ hr {
     >
 
     <div class="center">
+
         <button onclick="enviarEnlaceAcceso()">
             Enviar enlace de acceso
         </button>
+
     </div>
 
     <p id="loginMessage" class="status"></p>
@@ -229,7 +288,9 @@ hr {
     <div class="buttons">
 
         <!-- INGLÉS -->
+
         <div>
+
             <button onclick="escucharIngles()">
                 Escuchar EN
             </button>
@@ -237,11 +298,14 @@ hr {
             <button onclick="mostrarIngles()">
                 Leer EN
             </button>
+
         </div>
 
 
         <!-- ESPAÑOL -->
+
         <div>
+
             <button
                 class="btn-espanol"
                 onclick="escucharEspanol()"
@@ -255,10 +319,12 @@ hr {
             >
                 Leer ES
             </button>
+
         </div>
 
 
         <!-- NAVEGACIÓN -->
+
         <div>
 
             <button
@@ -279,16 +345,20 @@ hr {
 
 
         <div>
+
             <button onclick="abrirVistaSecuencial()">
                 Vista secuencial
             </button>
+
         </div>
 
 
         <div>
+
             <button onclick="volverAlMenu()">
                 Volver a las listas
             </button>
+
         </div>
 
     </div>
@@ -461,53 +531,29 @@ hr {
 <script>
 
 /* =====================================================
-   FIREBASE
-===================================================== */
-
-const firebaseConfig = {
-    apiKey: "AIzaSyC_s5suiACPV_itJAq4XcR3tEXOPoGf6T6M",
-    authDomain: "libros-1-4.firebaseapp.com",
-    projectId: "libros-1-4",
-    storageBucket: "libros-1-4.firebasestorage.app",
-    messagingSenderId: "237321156874",
-    appId: "1:237321156874:web:c7ec6434e62ab84328a2f3",
-    measurementId: "G-FF9CX8VK81"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-
-/* =====================================================
    EMAILJS
 ===================================================== */
 
 emailjs.init("UgKsBw8SRMgYBoPy3KWgx");
 
+const EMAILJS_SERVICE =
+    "service_ft1wkhu";
 
-const EMAILJS_SERVICE = "service_ft1wkhu";
-const EMAILJS_TEMPLATE = "template_4acbswy";
+const EMAILJS_TEMPLATE =
+    "template_4acbswy";
 
-
-/*
-   Esta función envía el aviso por EmailJS.
-
-   IMPORTANTE:
-   Si EmailJS falla, NO bloqueamos la aplicación.
-*/
 
 function enviarAvisoEmailJS(emailUsuario) {
 
-    const ahora = new Date();
-
-    const fechaIngreso =
-        ahora.toLocaleString("es-ES");
-
     const parametros = {
-        usuario_email: emailUsuario,
-        fecha_ingreso: fechaIngreso
-    };
 
+        usuario_email:
+            emailUsuario,
+
+        fecha_ingreso:
+            new Date().toLocaleString("es-ES")
+
+    };
 
     emailjs.send(
         EMAILJS_SERVICE,
@@ -530,12 +576,6 @@ function enviarAvisoEmailJS(emailUsuario) {
             error
         );
 
-        /*
-           No hacemos nada más.
-           El usuario ya puede utilizar
-           la aplicación.
-        */
-
     });
 
 }
@@ -545,35 +585,7 @@ function enviarAvisoEmailJS(emailUsuario) {
    BASE DE DATOS
 ===================================================== */
 
-/*
-   AQUÍ ES DONDE DESPUÉS AÑADIRÁS TUS LISTAS.
-
-   LIBRO 1:
-   101 - 130
-
-   LIBRO 2:
-   131 - 160
-
-   LIBRO 3:
-   161 - 190
-
-   LIBRO 4:
-   191 - 220
-
-   Cada lista debe tener esta estructura:
-
-   101: [
-       {es:"Hola.", en:"Hello."},
-       {es:"¿Cómo estás?", en:"How are you?"}
-   ],
-
-   MUY IMPORTANTE:
-   No poner una llave { adicional antes de {es: ...}
-*/
-
-
 const baseDatosListas = {
-
 
     /* =========================
        LIBRO 1
@@ -765,7 +777,8 @@ let modoSecuenciaActivo = null;
 let indiceSecuencia = 0;
 let secuenciaDetenida = false;
 
-const synth = window.speechSynthesis;
+const synth =
+    window.speechSynthesis;
 
 
 /* =====================================================
@@ -781,7 +794,9 @@ function enviarEnlaceAcceso() {
         .trim();
 
     const mensaje =
-        document.getElementById("loginMessage");
+        document.getElementById(
+            "loginMessage"
+        );
 
 
     if (
@@ -789,11 +804,20 @@ function enviarEnlaceAcceso() {
         !email.includes("@")
     ) {
 
+        mensaje.style.color = "red";
+
         mensaje.textContent =
             "Introduce un correo válido.";
 
         return;
+
     }
+
+
+    const {
+        auth,
+        sendSignInLinkToEmail
+    } = window.firebaseAuth;
 
 
     const actionCodeSettings = {
@@ -806,34 +830,40 @@ function enviarEnlaceAcceso() {
     };
 
 
+    mensaje.style.color = "#222";
+
     mensaje.textContent =
         "Enviando enlace...";
 
 
-    auth.sendSignInLinkToEmail(
+    sendSignInLinkToEmail(
+        auth,
         email,
         actionCodeSettings
     )
     .then(function() {
-
-        /*
-           Guardamos el correo para poder completar
-           el acceso cuando el usuario pulse el enlace.
-        */
 
         window.localStorage.setItem(
             "emailForSignIn",
             email
         );
 
+        mensaje.style.color =
+            "green";
 
         mensaje.textContent =
-            "Enlace enviado. Revisa tu correo.";
+            "¡Enlace enviado! Revisa tu correo.";
 
     })
     .catch(function(error) {
 
-        console.error(error);
+        console.error(
+            "Error Firebase:",
+            error
+        );
+
+        mensaje.style.color =
+            "red";
 
         mensaje.textContent =
             "No se pudo enviar el enlace: " +
@@ -845,14 +875,29 @@ function enviarEnlaceAcceso() {
 
 
 /* =====================================================
-   COMPROBAR ENLACE DE FIREBASE
+   COMPROBAR ENLACE FIREBASE
 ===================================================== */
 
-if (
-    auth.isSignInWithEmailLink(
-        window.location.href
-    )
-) {
+function comprobarEnlaceFirebase() {
+
+    const {
+        auth,
+        isSignInWithEmailLink,
+        signInWithEmailLink
+    } = window.firebaseAuth;
+
+
+    if (
+        !isSignInWithEmailLink(
+            auth,
+            window.location.href
+        )
+    ) {
+
+        return;
+
+    }
+
 
     let email =
         window.localStorage.getItem(
@@ -862,57 +907,68 @@ if (
 
     if (!email) {
 
-        email = prompt(
-            "Introduce de nuevo tu correo electrónico:"
+        email =
+            window.prompt(
+                "Introduce de nuevo tu correo electrónico:"
+            );
+
+    }
+
+
+    if (!email) {
+
+        return;
+
+    }
+
+
+    signInWithEmailLink(
+        auth,
+        email,
+        window.location.href
+    )
+    .then(function(result) {
+
+        window.localStorage.removeItem(
+            "emailForSignIn"
         );
 
-    }
+
+        window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+        );
 
 
-    if (email) {
+        enviarAvisoEmailJS(
+            result.user.email
+        );
 
-        auth.signInWithEmailLink(
-            email,
-            window.location.href
-        )
-        .then(function(result) {
+    })
+    .catch(function(error) {
 
-            window.localStorage.removeItem(
-                "emailForSignIn"
-            );
+        console.error(
+            "Error al validar el enlace:",
+            error
+        );
 
-
-            /*
-               ACCESO CORRECTO.
-
-               Ahora enviamos el aviso por EmailJS.
-            */
-
-            enviarAvisoEmailJS(
-                result.user.email
-            );
+        document
+            .getElementById(
+                "loginMessage"
+            )
+            .style.color = "red";
 
 
-            /*
-               Y abrimos la aplicación.
-            */
+        document
+            .getElementById(
+                "loginMessage"
+            )
+            .textContent =
+            "No se pudo completar el acceso: " +
+            error.message;
 
-            iniciarAplicacion();
-
-        })
-        .catch(function(error) {
-
-            console.error(error);
-
-            document
-                .getElementById("loginMessage")
-                .textContent =
-                "No se pudo completar el acceso: " +
-                error.message;
-
-        });
-
-    }
+    });
 
 }
 
@@ -921,15 +977,28 @@ if (
    ESTADO DE AUTENTICACIÓN
 ===================================================== */
 
-auth.onAuthStateChanged(function(user) {
+function iniciarControlAutenticacion() {
 
-    if (user) {
+    const {
+        auth,
+        onAuthStateChanged
+    } = window.firebaseAuth;
 
-        iniciarAplicacion();
 
-    }
+    onAuthStateChanged(
+        auth,
+        function(user) {
 
-});
+            if (user) {
+
+                iniciarAplicacion();
+
+            }
+
+        }
+    );
+
+}
 
 
 /* =====================================================
@@ -966,6 +1035,7 @@ function generarLibros() {
             "bookButtons"
         );
 
+
     contenedor.innerHTML = "";
 
 
@@ -976,7 +1046,10 @@ function generarLibros() {
     ) {
 
         const boton =
-            document.createElement("button");
+            document.createElement(
+                "button"
+            );
+
 
         boton.textContent =
             "Libro " + i;
@@ -1012,6 +1085,7 @@ function seleccionarLibro(
             "listButtons"
         );
 
+
     contenedor.innerHTML = "";
 
 
@@ -1031,7 +1105,9 @@ function seleccionarLibro(
 
 
         const boton =
-            document.createElement("button");
+            document.createElement(
+                "button"
+            );
 
 
         boton.textContent =
@@ -1064,12 +1140,6 @@ function cargarLista(numero) {
     detenerAudio();
 
 
-    /*
-       IMPORTANTE:
-       Ya no utilizamos la lista 101 como
-       sustituta silenciosa si falta una lista.
-    */
-
     if (
         !Array.isArray(
             baseDatosListas[numero]
@@ -1083,6 +1153,7 @@ function cargarLista(numero) {
         );
 
         return;
+
     }
 
 
@@ -1137,6 +1208,7 @@ function actualizarFrase() {
     ) {
 
         return;
+
     }
 
 
@@ -1232,7 +1304,8 @@ function hablar(
         velocidad;
 
 
-    utterance.pitch = 1;
+    utterance.pitch =
+        1;
 
 
     const voces =
@@ -1276,7 +1349,9 @@ function escucharIngles() {
 
 
     hablar(
-        listaActual[indiceFrase].en,
+        listaActual[
+            indiceFrase
+        ].en,
         "en-US",
         1
     );
@@ -1290,7 +1365,9 @@ function escucharEspanol() {
 
 
     hablar(
-        listaActual[indiceFrase].es,
+        listaActual[
+            indiceFrase
+        ].es,
         "es-ES",
         1
     );
@@ -1309,6 +1386,7 @@ function siguienteFrase() {
     ) {
 
         return;
+
     }
 
 
@@ -1334,6 +1412,7 @@ function anteriorFrase() {
     ) {
 
         return;
+
     }
 
 
@@ -1670,6 +1749,7 @@ function reproducirSecuencia(
     ) {
 
         return;
+
     }
 
 
@@ -1680,7 +1760,8 @@ function reproducirSecuencia(
         modo;
 
 
-    indiceSecuencia = 0;
+    indiceSecuencia =
+        0;
 
 
     secuenciaDetenida =
@@ -1722,10 +1803,12 @@ function obtenerPasos(
     ) {
 
         return [
+
             {
                 texto: frase.en,
                 idioma: vozEN
             }
+
         ];
 
     }
@@ -1736,10 +1819,12 @@ function obtenerPasos(
     ) {
 
         return [
+
             {
                 texto: frase.es,
                 idioma: vozES
             }
+
         ];
 
     }
@@ -1794,6 +1879,7 @@ function reproducirSiguiente() {
     ) {
 
         return;
+
     }
 
 
@@ -1803,6 +1889,7 @@ function reproducirSiguiente() {
     ) {
 
         return;
+
     }
 
 
@@ -1834,10 +1921,8 @@ function reproducirSiguiente() {
 
 
     if (
-        modoSecuenciaActivo ===
-        "es" ||
-        modoSecuenciaActivo ===
-        "es-en"
+        modoSecuenciaActivo === "es" ||
+        modoSecuenciaActivo === "es-en"
     ) {
 
         document
@@ -1867,6 +1952,7 @@ function reproducirSiguiente() {
         ) {
 
             return;
+
         }
 
 
@@ -1885,7 +1971,9 @@ function reproducirSiguiente() {
 
 
         const item =
-            pasos[paso++];
+            pasos[
+                paso++
+            ];
 
 
         const utterance =
@@ -1902,7 +1990,8 @@ function reproducirSiguiente() {
             velocidad;
 
 
-        utterance.pitch = 1;
+        utterance.pitch =
+            1;
 
 
         const voz =
@@ -1964,36 +2053,28 @@ function reproducirSiguiente() {
 
 function mostrarSecuenciaEN() {
 
-    mostrarSecuencia(
-        "en"
-    );
+    mostrarSecuencia("en");
 
 }
 
 
 function mostrarSecuenciaES() {
 
-    mostrarSecuencia(
-        "es"
-    );
+    mostrarSecuencia("es");
 
 }
 
 
 function mostrarSecuenciaENES() {
 
-    mostrarSecuencia(
-        "en-es"
-    );
+    mostrarSecuencia("en-es");
 
 }
 
 
 function mostrarSecuenciaESEN() {
 
-    mostrarSecuencia(
-        "es-en"
-    );
+    mostrarSecuencia("es-en");
 
 }
 
@@ -2078,10 +2159,104 @@ function mostrarSecuencia(
 
 
 /* =====================================================
+   INICIAR FIREBASE CUANDO ESTÉ CARGADO
+===================================================== */
+
+function esperarFirebase() {
+
+    if (
+        !window.firebaseAuth
+    ) {
+
+        setTimeout(
+            esperarFirebase,
+            50
+        );
+
+        return;
+
+    }
+
+
+    comprobarEnlaceFirebase();
+
+    iniciarControlAutenticacion();
+
+}
+
+
+/* =====================================================
+   FUNCIONES GLOBALES PARA LOS BOTONES
+===================================================== */
+
+window.enviarEnlaceAcceso =
+    enviarEnlaceAcceso;
+
+window.seleccionarLibro =
+    seleccionarLibro;
+
+window.cargarLista =
+    cargarLista;
+
+window.escucharIngles =
+    escucharIngles;
+
+window.escucharEspanol =
+    escucharEspanol;
+
+window.mostrarIngles =
+    mostrarIngles;
+
+window.mostrarEspanol =
+    mostrarEspanol;
+
+window.anteriorFrase =
+    anteriorFrase;
+
+window.siguienteFrase =
+    siguienteFrase;
+
+window.abrirVistaSecuencial =
+    abrirVistaSecuencial;
+
+window.volverAlEstudio =
+    volverAlEstudio;
+
+window.volverAlMenu =
+    volverAlMenu;
+
+window.reproducirSecuencia =
+    reproducirSecuencia;
+
+window.pausarAudio =
+    pausarAudio;
+
+window.reanudarAudio =
+    reanudarAudio;
+
+window.detenerAudio =
+    detenerAudio;
+
+window.mostrarSecuenciaEN =
+    mostrarSecuenciaEN;
+
+window.mostrarSecuenciaES =
+    mostrarSecuenciaES;
+
+window.mostrarSecuenciaENES =
+    mostrarSecuenciaENES;
+
+window.mostrarSecuenciaESEN =
+    mostrarSecuenciaESEN;
+
+
+/* =====================================================
    ARRANQUE
 ===================================================== */
 
 generarLibros();
+
+esperarFirebase();
 
 </script>
 
