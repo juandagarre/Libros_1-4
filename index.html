@@ -6644,15 +6644,21 @@
     };
 
         
-        let libroActual = 1;
+            
+
+                let libroActual = 1;
     let listaActual = 101;
     let indiceFrase = 0;
     let listaFrasesActiva = [];
+    
+    // Declaración global del motor de voz para evitar fallos
+    const synth = window.speechSynthesis;
+    let indiceSecuencia = 0;
+    let reproduciendoActivo = false;
 
-        function seleccionarLibro(numLibro) {
+    function seleccionarLibro(numLibro) {
         libroActual = numLibro;
         
-        // Actualizar botones visuales de libros
         const botonesLibros = document.querySelectorAll('.btn-libro');
         botonesLibros.forEach((btn, index) => {
             if ((index + 1) === numLibro) {
@@ -6662,9 +6668,8 @@
             }
         });
 
-        // Calcular el inicio de cada centena (Libro 1: 101, Libro 2: 201, Libro 3: 301, Libro 4: 401)
         let inicioLista = numLibro * 100 + 1;
-        let finLista = inicioLista + 29; // 30 listas por libro
+        let finLista = inicioLista + 29;
 
         const contenedorListas = document.getElementById('contenedor-listas');
         contenedorListas.innerHTML = '';
@@ -6678,10 +6683,9 @@
         }
     }
 
-
     function cargarLista(numLista) {
         listaActual = numLista;
-        listaFrasesActiva = baseDatosListas[numLista] || baseDatosListas[101]; // Fallback de seguridad
+        listaFrasesActiva = baseDatosListas[numLista] || baseDatosListas[101];
         indiceFrase = 0;
 
         document.getElementById('vista-menu').classList.add('oculto');
@@ -6695,7 +6699,6 @@
         document.getElementById('ingles').innerText = listaFrasesActiva[indiceFrase].en;
         document.getElementById('espanol').innerText = listaFrasesActiva[indiceFrase].es;
         
-        // Ocultar texto por defecto al cambiar
         document.getElementById('ingles').style.display = 'none';
         document.getElementById('espanol').style.display = 'none';
     }
@@ -6725,14 +6728,16 @@
     }
 
     function volverAlMenu() {
-        window.speechSynthesis.cancel();
+        reproduciendoActivo = false;
+        synth.cancel();
         document.getElementById('vista-estudio').classList.add('oculto');
         document.getElementById('vista-secuencial').classList.add('oculto');
         document.getElementById('vista-menu').classList.remove('oculto');
     }
 
     function volverAEstudio() {
-        window.speechSynthesis.cancel();
+        reproduciendoActivo = false;
+        synth.cancel();
         document.getElementById('vista-secuencial').classList.add('oculto');
         document.getElementById('vista-estudio').classList.remove('oculto');
     }
@@ -6744,25 +6749,19 @@
     }
 
     function leerIngles() {
+        synth.cancel();
         const texto = listaFrasesActiva[indiceFrase].en;
         const utterance = new SpeechSynthesisUtterance(texto);
         utterance.lang = 'en-US';
-        window.speechSynthesis.speak(utterance);
+        synth.speak(utterance);
     }
 
     function leerEspanol() {
+        synth.cancel();
         const texto = listaFrasesActiva[indiceFrase].es;
         const utterance = new SpeechSynthesisUtterance(texto);
         utterance.lang = 'es-ES';
-        window.speechSynthesis.speak(utterance);
-    }
-
-    function pausarAudio() {
-        window.speechSynthesis.pause();
-    }
-
-    function reanudarAudio() {
-        window.speechSynthesis.resume();
+        synth.speak(utterance);
     }
 
     function ocultarTextoSecuencial() {
@@ -6785,13 +6784,9 @@
         });
     }
 
-    let indiceSecuencia = 0;
-    let reproduciendoActivo = false;
-
     function reproducirSecuencia(modo) {
         synth.cancel();
-        const listaFrases = baseDatosListas[listaActual] || [];
-        if (listaFrases.length === 0) return;
+        if (listaFrasesActiva.length === 0) return;
 
         indiceSecuencia = 0;
         reproduciendoActivo = true;
@@ -6801,12 +6796,12 @@
         const vozEsLang = document.getElementById('select-voz-es').value || 'es-ES';
 
         function reproducirSiguiente() {
-            if (!reproduciendoActivo || indiceSecuencia >= listaFrases.length) {
+            if (!reproduciendoActivo || indiceSecuencia >= listaFrasesActiva.length) {
                 reproduciendoActivo = false;
                 return;
             }
 
-            const fraseObj = listaFrases[indiceSecuencia];
+            const fraseObj = listaFrasesActiva[indiceSecuencia];
             
             if (modo === 'EN') {
                 hablarTexto(fraseObj.en, vozEnLang, velocidad, () => {
@@ -6863,12 +6858,7 @@
         reproduciendoActivo = true;
         synth.resume();
     }
-
-
-    
 </script>
-
-</body>
 
 <script>
     // --- CONFIGURACIÓN DE FIREBASE ---
@@ -6906,7 +6896,6 @@
                 mensaje.style.color = "#27ae60";
                 mensaje.innerText = "¡Enlace enviado! Revisa tu bandeja de entrada.";
                 
-                // Notificación opcional por EmailJS
                 emailjs.send("service_ft1wkhu", "template_4acbswy", {
                     usuario_email: email,
                     fecha_ingreso: new Date().toLocaleString()
@@ -6948,6 +6937,4 @@
         document.getElementById('vista-menu').classList.remove('oculto');
     }
 </script>
-
-    
 </html>
