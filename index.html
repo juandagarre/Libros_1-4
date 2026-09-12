@@ -6899,10 +6899,7 @@
                 mensaje.style.color = "#27ae60";
                 mensaje.innerText = "¡Enlace enviado! Revisa tu bandeja de entrada.";
                 
-                emailjs.send("service_ft1wkhu", "template_4acbswy", {
-                    usuario_email: email,
-                    fecha_ingreso: new Date().toLocaleString()
-                }).catch(err => console.error("Error EmailJS:", err));
+                
             })
             .catch((error) => {
                 mensaje.style.color = "red";
