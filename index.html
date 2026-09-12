@@ -7006,25 +7006,27 @@
 
 
 
-    
 function accesoPruebasEmailJS() {
-    // Entrar directamente en la aplicación
     iniciarAplicacion();
 
-    // Enviar aviso de prueba mediante EmailJS
     emailjs.send("service_ft1wkhu", "template_4acbswy", {
         user_email: "PRUEBA - acceso directo",
         time: new Date().toLocaleString("es-ES")
     })
     .then(function(response) {
-        console.log("EmailJS enviado correctamente:", response.status, response.text);
-        alert("✅ Acceso realizado y correo de EmailJS enviado.");
+        alert("✅ EmailJS FUNCIONA\n\nCódigo: " + response.status + "\nRespuesta: " + response.text);
     })
     .catch(function(error) {
-        console.error("Error de EmailJS:", error);
-        alert("⚠️ Se ha accedido a la aplicación, pero EmailJS ha dado error. Mira la consola.");
+        alert(
+            "❌ ERROR DE EMAILJS\n\n" +
+            "Status: " + (error.status || "sin dato") + "\n" +
+            "Text: " + (error.text || "sin dato") + "\n" +
+            "Mensaje: " + (error.message || "sin dato")
+        );
     });
 }
+
+    
 
     
 </script>
