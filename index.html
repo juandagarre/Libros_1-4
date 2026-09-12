@@ -300,89 +300,7 @@
     </div>
 </div>
 
-<script>
-    // --- CONFIGURACIÓN DE FIREBASE ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyC_s5suiACPV_itJAq4XcR3tEXOPoGfT6M",
-        authDomain: "libros-1-4.firebaseapp.com",
-        projectId: "libros-1-4"
-    };
-    firebase.initializeApp(firebaseConfig);
 
-    // --- CONFIGURACIÓN DE EMAILJS ---
-    (function(){
-        emailjs.init("UgKsBw8SRMgYBoPy3KWgx");
-    })();
-
-    const actionCodeSettings = {
-        url: 'https://juandagarre.github.io/Libros_1-4/', // URL exacta de tu GitHub Pages
-        handleCodeInApp: true,
-    };
-
-
-
-    
-    
-
-    function enviarEnlaceLogin() {
-        const email = document.getElementById('email-usuario').value;
-        const mensaje = document.getElementById('mensaje-login');
-
-        if (!email) {
-            mensaje.style.color = "red";
-            mensaje.innerText = "Por favor, introduce un correo válido.";
-            return;
-        }
-
-        firebase.auth().sendSignInLinkToEmail(email, actionCodeSettings)
-            .then(() => {
-                window.localStorage.setItem('emailForSignIn', email);
-                mensaje.style.color = "#27ae60";
-                mensaje.innerText = "¡Enlace enviado! Revisa tu bandeja de entrada.";
-            })
-            .catch((error) => {
-                mensaje.style.color = "red";
-                mensaje.innerText = "Error: " + error.message;
-            });
-    }
-
-        // Comprobar si el usuario vuelve mediante el enlace del correo
-    if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
-        let email = window.localStorage.getItem('emailForSignIn');
-        if (!email) {
-            email = window.prompt('Por favor, confirma tu correo electrónico para finalizar el acceso:');
-        }
-        
-        if (email) {
-            firebase.auth().signInWithEmailLink(email, window.location.href)
-                .then((result) => {
-                    window.localStorage.removeItem('emailForSignIn');
-                    
-                    // Limpiar la URL para quitar los códigos largos de Firebase
-                    window.history.replaceState({}, document.title, window.location.pathname);
-
-                    // Enviar notificación por EmailJS
-                    emailjs.send("service_ft1wkhu", "template_4acbswy", {
-                        usuario_email: email,
-                        fecha_ingreso: new Date().toLocaleString()
-                    }).catch(err => console.log("Error EmailJS:", err));
-
-                    iniciarAplicacion();
-                })
-                .catch((error) => {
-                    alert("Error al verificar el enlace: " + error.message);
-                });
-        }
-    }
-
-    
-
-    function iniciarAplicacion() {
-        document.getElementById('vista-login').classList.add('oculto');
-        document.getElementById('vista-menu').classList.remove('oculto');
-        seleccionarLibro(1);
-    }
-</script>
 
 
 
@@ -6869,26 +6787,42 @@
 </script>
 
 <script>
-    // --- CONFIGURACIÓN DE FIREBASE ---
+    // ============================================================
+    // CONFIGURACIÓN DE FIREBASE
+    // ============================================================
+
     const firebaseConfig = {
-        apiKey: "UgKsBw8SRMgYBoPy3KWgx",
+        apiKey: "AIzaSyC_s5suiACPV_itJAq4XcR3tEXOPoGfT6M",
         authDomain: "libros-1-4.firebaseapp.com",
         projectId: "libros-1-4"
     };
+
     firebase.initializeApp(firebaseConfig);
 
-    // --- CONFIGURACIÓN DE EMAILJS ---
-    (function(){
-        emailjs.init("UgKsBw8SRMgYBoPy3KWgx");
-    })();
+
+    // ============================================================
+    // CONFIGURACIÓN DE EMAILJS
+    // ============================================================
+
+    emailjs.init("UgKsBw8SRMgYBoPy3KWgx");
+
+
+    // ============================================================
+    // CONFIGURACIÓN DEL ENLACE MÁGICO
+    // ============================================================
 
     const actionCodeSettings = {
-        url: window.location.href,
-        handleCodeInApp: true,
+        url: "https://juandagarre.github.io/Libros_1-4/",
+        handleCodeInApp: true
     };
 
-    // --- FUNCIÓN DE ENVÍO DE ENLACE MÁGICO ---
+
+    // ============================================================
+    // ENVIAR ENLACE DE ACCESO
+    // ============================================================
+
     function enviarEnlaceLogin() {
+
         const email = document.getElementById('email-usuario').value;
         const mensaje = document.getElementById('mensaje-login');
 
@@ -6900,45 +6834,165 @@
 
         firebase.auth().sendSignInLinkToEmail(email, actionCodeSettings)
             .then(() => {
+
+                // Guardamos el correo para completar el acceso
                 window.localStorage.setItem('emailForSignIn', email);
+
                 mensaje.style.color = "#27ae60";
-                mensaje.innerText = "¡Enlace enviado! Revisa tu bandeja de entrada.";
-                
-                emailjs.send("service_ft1wkhu", "template_4acbswy", {
-                    usuario_email: email,
-                    fecha_ingreso: new Date().toLocaleString()
-                }).catch(err => console.error("Error EmailJS:", err));
+                mensaje.innerText =
+                    "¡Enlace enviado! Revisa tu bandeja de entrada.";
+
             })
             .catch((error) => {
+
                 mensaje.style.color = "red";
-                mensaje.innerText = "Error: " + error.message;
+                mensaje.innerText =
+                    "Error: " + error.message;
+
+                console.error("Error Firebase:", error);
             });
     }
 
-    // --- COMPROBAR SI EL USUARIO VUELVE DESDE EL CORREO ---
-    firebase.auth().isSignInWithEmailLink(window.location.href)
-        .then((isSignIn) => {
-            if (isSignIn) {
-                let email = window.localStorage.getItem('emailForSignIn');
-                if (!email) {
-                    email = window.prompt('Por favor, confirma tu correo electrónico:');
-                }
-                firebase.auth().signInWithEmailLink(email, window.location.href)
-                    .then((result) => {
-                        window.localStorage.removeItem('emailForSignIn');
-                        iniciarAplicacion();
-                    })
-                    .catch((error) => {
-                        alert("Error al verificar el enlace: " + error.message);
-                    });
-            }
-        });
+
+    // ============================================================
+    // COMPROBAR SI HEMOS VUELTO DESDE EL ENLACE DEL CORREO
+    // ============================================================
+
+    if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
+
+        let email =
+            window.localStorage.getItem('emailForSignIn');
+
+        if (!email) {
+
+            email = window.prompt(
+                'Por favor, confirma tu correo electrónico para finalizar el acceso:'
+            );
+        }
+
+        if (email) {
+
+            firebase.auth().signInWithEmailLink(
+                email,
+                window.location.href
+            )
+            .then(() => {
+
+                // Ya no necesitamos guardar el correo
+                window.localStorage.removeItem('emailForSignIn');
+
+                // Limpiamos la URL
+                window.history.replaceState(
+                    {},
+                    document.title,
+                    window.location.pathname
+                );
+
+            })
+            .catch((error) => {
+
+                alert(
+                    "Error al verificar el enlace: " +
+                    error.message
+                );
+
+                console.error(
+                    "Error al verificar enlace:",
+                    error
+                );
+            });
+        }
+    }
+
+
+    // ============================================================
+    // CONTROL DEL ESTADO DE AUTENTICACIÓN
+    // ============================================================
 
     firebase.auth().onAuthStateChanged((user) => {
+
         if (user) {
-            iniciarAplicacion();
+
+            // ----------------------------------------------------
+            // EL USUARIO ESTÁ AUTENTICADO
+            // ----------------------------------------------------
+
+            document.getElementById('vista-login')
+                .classList.add('oculto');
+
+            document.getElementById('vista-menu')
+                .classList.remove('oculto');
+
+
+            // ----------------------------------------------------
+            // EMAILJS
+            //
+            // Solo enviamos el aviso una vez durante esta sesión
+            // del navegador. Por tanto, refrescar la página no
+            // vuelve a enviar otro correo.
+            // ----------------------------------------------------
+
+            const avisoEnviado =
+                sessionStorage.getItem('avisoEmailJSEnviado');
+
+            if (!avisoEnviado) {
+
+                const templateParams = {
+
+                    user_email: user.email,
+
+                    time: new Date().toLocaleString("es-ES")
+
+                };
+
+
+                emailjs.send(
+                    'service_ft1wkhu',
+                    'template_4acbswy',
+                    templateParams
+                )
+                .then(() => {
+
+                    console.log(
+                        'EmailJS: aviso enviado correctamente'
+                    );
+
+                    sessionStorage.setItem(
+                        'avisoEmailJSEnviado',
+                        'true'
+                    );
+
+                })
+                .catch((error) => {
+
+                    // IMPORTANTE:
+                    // Si EmailJS falla, NO impedimos el acceso.
+
+                    console.error(
+                        'EmailJS: error al enviar el aviso:',
+                        error
+                    );
+
+                });
+            }
+
+
+        } else {
+
+            // ----------------------------------------------------
+            // NO HAY USUARIO AUTENTICADO
+            // ----------------------------------------------------
+
+            document.getElementById('vista-login')
+                .classList.remove('oculto');
+
+            document.getElementById('vista-menu')
+                .classList.add('oculto');
         }
+
     });
+
+
 
     function iniciarAplicacion() {
         document.getElementById('vista-login').classList.add('oculto');
