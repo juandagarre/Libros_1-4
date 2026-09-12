@@ -192,8 +192,12 @@
         <p id="mensaje-login" style="font-size: 0.9rem; color: #27ae60; margin-top: 10px;"></p>
     </div>
 
-  
-        <button class="accion" style="background: #e67e22; margin-top: 15px;" onclick="iniciarAplicacion()">⚡ Acceso directo (Modo Pruebas)</button>
+
+<button class="accion" style="background: #e67e22; margin-top: 15px;" onclick="accesoPruebasEmailJS()">
+    ⚡ Acceso directo (Modo Pruebas)
+</button>
+    
+        
 
         
     
@@ -6998,6 +7002,31 @@
         document.getElementById('vista-login').classList.add('oculto');
         document.getElementById('vista-menu').classList.remove('oculto');
     }
+
+
+
+
+    
+function accesoPruebasEmailJS() {
+    // Entrar directamente en la aplicación
+    iniciarAplicacion();
+
+    // Enviar aviso de prueba mediante EmailJS
+    emailjs.send("service_ft1wkhu", "template_4acbswy", {
+        user_email: "PRUEBA - acceso directo",
+        time: new Date().toLocaleString("es-ES")
+    })
+    .then(function(response) {
+        console.log("EmailJS enviado correctamente:", response.status, response.text);
+        alert("✅ Acceso realizado y correo de EmailJS enviado.");
+    })
+    .catch(function(error) {
+        console.error("Error de EmailJS:", error);
+        alert("⚠️ Se ha accedido a la aplicación, pero EmailJS ha dado error. Mira la consola.");
+    });
+}
+
+    
 </script>
 </html>
    
