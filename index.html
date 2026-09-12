@@ -6918,6 +6918,14 @@
                 firebase.auth().signInWithEmailLink(email, window.location.href)
                     .then((result) => {
                         window.localStorage.removeItem('emailForSignIn');
+                        
+                        // Enviar aviso SOLO cuando el acceso se ha completado
+    emailjs.send("service_ft1wkhu", "template_4acbswy", {
+        usuario_email: result.user.email,
+        fecha_ingreso: new Date().toLocaleString("es-ES")
+    }).catch(err => console.error("Error EmailJS:", err));
+                        
+                        
                         iniciarAplicacion();
                     })
                     .catch((error) => {
